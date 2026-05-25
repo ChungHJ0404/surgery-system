@@ -584,6 +584,12 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   </div>
 </div>
 
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9998;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="width:40px;height:40px;border:3px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="font-size:15px;color:var(--text-2);font-weight:500">正在載入資料…</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <div id="toast"></div>
 
 <!-- 新增刀房 Modal -->
@@ -1330,9 +1336,20 @@ function toQS(obj) {
 function apiGet(params, callback) {
   if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
   var url = SHEETS_URL + '?' + toQS(params);
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(d) { if(callback) callback(d); })
+  fetch(url, {redirect:'follow'})
+    .then(function(r) { return r.text(); })
+    .then(function(text) {
+      try {
+        var d = JSON.parse(text);
+        if(callback) callback(d);
+      } catch(e) {
+        // Google redirect 有時會回傳 HTML，嘗試再抓一次
+        fetch(url, {redirect:'follow', mode:'cors'})
+          .then(function(r2){ return r2.json(); })
+          .then(function(d2){ if(callback) callback(d2); })
+          .catch(function(){ if(callback) callback({status:'error', message:'parse error'}); });
+      }
+    })
     .catch(function(e) { if(callback) callback({status:'error', message:e.toString()}); });
 }
 
@@ -1346,8 +1363,10 @@ function apiSend(params) {
 // ══ 啟動時從 Sheets 載入所有資料 ══
 function loadFromSheets(callback) {
   if (!SHEETS_URL) { if(callback) callback(); return; }
-  showToast('⏳ 正在載入資料…');
+  var overlay = document.getElementById('loading-overlay');
+  if(overlay) overlay.style.display='flex';
   apiGet({action:'getAll'}, function(data) {
+    if(overlay) overlay.style.display='none';
     if (!data || data.status !== 'ok') {
       showToast('⚠️ 無法連線 Sheets，使用本地資料');
       if(callback) callback(); return;
@@ -1495,28 +1514,24 @@ var _origInitUI = initUI;
 initUI = function() {
   _origInitUI();
   if (SHEETS_URL) {
-    setTimeout(function() {
-      loadFromSheets(function() {
-        populateDoctorSelect();
-        populateORSelect();
-        // 找最近一筆有資料的日期
-        var today = toDateStr(new Date());
-        var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
-        // 優先顯示今天，若今天沒資料則找最近未來或最近過去有資料的日期
-        var best = today;
-        if(dates.length) {
-          var future = dates.filter(function(d){return d>=today;}).sort();
-          var past   = dates.filter(function(d){return d<today;}).sort().reverse();
-          if(future.length) best = future[0];
-          else if(past.length) best = past[0];
-        }
-        document.getElementById('dashboard-date').value = best;
-        renderDashboard();
-        renderList();
-        renderStats();
-        if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
-      });
-    }, 300);
+    loadFromSheets(function() {
+      populateDoctorSelect();
+      populateORSelect();
+      var today = toDateStr(new Date());
+      var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
+      var best = today;
+      if(dates.length) {
+        var future = dates.filter(function(d){return d>=today;}).sort();
+        var past   = dates.filter(function(d){return d<today;}).sort().reverse();
+        if(future.length) best = future[0];
+        else if(past.length) best = past[0];
+      }
+      document.getElementById('dashboard-date').value = best;
+      renderDashboard();
+      renderList();
+      renderStats();
+      if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
+    });
   }
 };
 </script>
