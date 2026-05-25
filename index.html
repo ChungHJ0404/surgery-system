@@ -1571,13 +1571,12 @@ initUI = function() {
       if(future.length) best = future[0];
       else if(past.length) best = past[0];
       document.getElementById('dashboard-date').value = best;
-      renderDashboard();
-      renderList();
-      renderStats();
-      if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
-      renderList();
-      renderStats();
-      if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
+      setTimeout(function(){
+        renderDashboard();
+        renderList();
+        renderStats();
+        if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
+      }, 100);
     });
   }
 };
