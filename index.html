@@ -838,7 +838,7 @@ function initUI(){
   document.getElementById('topbar-date').textContent=ds;
   document.getElementById('dashboard-date').value=toDateStr(now);
   populateOpList();populateDoctorSelect();populateORSelect();
-  renderDashboard();renderStats();renderList();
+  if(!SHEETS_URL){renderDashboard();renderStats();renderList();}
   if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('sheets-connected').style.display='block';}
   showPage('dashboard',document.querySelector('.nav-item'));
 }
@@ -1495,6 +1495,18 @@ initUI = function() {
       loadFromSheets(function() {
         populateDoctorSelect();
         populateORSelect();
+        // 找最近一筆有資料的日期
+        var today = toDateStr(new Date());
+        var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
+        // 優先顯示今天，若今天沒資料則找最近未來或最近過去有資料的日期
+        var best = today;
+        if(dates.length) {
+          var future = dates.filter(function(d){return d>=today;}).sort();
+          var past   = dates.filter(function(d){return d<today;}).sort().reverse();
+          if(future.length) best = future[0];
+          else if(past.length) best = past[0];
+        }
+        document.getElementById('dashboard-date').value = best;
         renderDashboard();
         renderList();
         renderStats();
