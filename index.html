@@ -856,9 +856,15 @@ function initUI(){
 function showDebug(){
   var dateVal = document.getElementById('dashboard-date').value;
   var msg = '選擇日期：'+dateVal+'\n';
-  msg += '排程總筆數：'+schedules.length+'\n\n';
-  schedules.slice(0,5).forEach(function(s,i){
-    msg += (i+1)+'. 原始日期=「'+s.date+'」 normDate=「'+normDate(s.date)+'」 術式='+s.opname+'\n';
+  msg += '排程總筆數：'+schedules.length+'\n';
+  msg += '刀房總數：'+ors.length+'\n\n';
+  msg += '【刀房】\n';
+  ors.forEach(function(o,i){
+    msg += (i+1)+'. id='+o.id+' name='+o.name+' open='+o.open+'\n';
+  });
+  msg += '\n【排程前3筆】\n';
+  schedules.slice(0,3).forEach(function(s,i){
+    msg += (i+1)+'. 日期=「'+s.date+'」 or='+s.or+' 術式='+s.opname+'\n';
   });
   alert(msg);
 }
