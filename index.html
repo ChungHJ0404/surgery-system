@@ -824,7 +824,7 @@ function renderDashboard(){
   var dateVal=document.getElementById('dashboard-date').value;
   var sessions=['08:00','10:00','13:00','15:00'];
   var body=document.getElementById('or-grid-body');body.innerHTML='';
-  var ts=schedules.filter(function(s){return s.date===dateVal;});
+  var ts=schedules.filter(function(s){return normDate(s.date)===dateVal;});
 
   if(isMobile()){
     // ── 手機版：每個刀房一張卡片 ──
@@ -898,14 +898,14 @@ function renderDashboard(){
     sc('今日手術','color:var(--text)',ts.length,ors.filter(function(o){return o.open;}).length+' 間刀房開放')+
     sc('急診插刀','color:var(--orange)',em,'今日')+
     sc('停用刀房','color:var(--red)',cc,cc?ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無')+
-    sc('本月手術','color:var(--green)',schedules.filter(function(s){var d=new Date(s.date),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length,'台');
+    sc('本月手術','color:var(--green)',schedules.filter(function(s){var d=new Date(normDate(s.date)),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length,'台');
   renderEmergencyStats();
 }
 function sc(l,s,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="'+s+'">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
 
 function renderEmergencyStats(){
   var now=new Date();
-  var mo=emergencyLogs.filter(function(e){var d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var mo=emergencyLogs.filter(function(e){var d=new Date(normDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var body=document.getElementById('emergency-stats-body');
   if(!mo.length){body.innerHTML='<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無急診插刀記錄</div>';return;}
   var html='<div class="list-header"><span class="col">日期</span><span class="col">刀房/時段</span><span class="col">急診醫師</span><span class="col-wide">急診術式</span><span class="col">被擋醫師</span><span class="col-wide">被擋術式</span></div>';
@@ -1056,12 +1056,12 @@ function renderList(){
   var now=new Date();
   var f=schedules.filter(function(s){
     if(df&&s.doctor!==df)return false;
-    var d=new Date(s.date);
+    var d=new Date(normDate(s.date));
     if(p==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
     if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
     if(p==='year')return d.getFullYear()===now.getFullYear();
     return true;
-  }).sort(function(a,b){return a.date>b.date?1:a.date<b.date?-1:0;});
+  }).sort(function(a,b){var da=normDate(a.date),db=normDate(b.date);return da>db?1:da<db?-1:0;});
   var isAdmin=currentUser.role==='admin';
   var html='';
   if(isMobile()){
@@ -1105,7 +1105,7 @@ function exportCSV(){
   var now=new Date();
   var f=schedules.filter(function(s){
     if(df&&s.doctor!==df)return false;
-    var d=new Date(s.date);
+    var d=new Date(normDate(s.date));
     if(p==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
     if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
     if(p==='year')return d.getFullYear()===now.getFullYear();
@@ -1132,8 +1132,8 @@ function saveTargets(){
 // ══ 統計 ══
 function renderStats(){
   var now=new Date();
-  var mo=schedules.filter(function(s){var d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
-  var yr=schedules.filter(function(s){return new Date(s.date).getFullYear()===now.getFullYear();});
+  var mo=schedules.filter(function(s){var d=new Date(normDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var yr=schedules.filter(function(s){return new Date(normDate(s.date)).getFullYear()===now.getFullYear();});
   var moEm=mo.filter(function(s){return s.emergency;});
   var tMonth = parseInt(localStorage.getItem('targetMonth')||'80');
   var tYear  = parseInt(localStorage.getItem('targetYear')||'800');
@@ -1160,7 +1160,7 @@ function renderStats(){
   }).join('');
 
   // 被擋刀統計
-  var moEmLogs=emergencyLogs.filter(function(e){var d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var moEmLogs=emergencyLogs.filter(function(e){var d=new Date(normDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var blockedCount={};
   moEmLogs.forEach(function(e){blockedCount[e.blockedDoctor]=(blockedCount[e.blockedDoctor]||0)+1;});
   var blockedArr=Object.keys(blockedCount).map(function(k){return{name:k,count:blockedCount[k]};}).sort(function(a,b){return b.count-a.count;});
