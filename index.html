@@ -897,8 +897,18 @@ function askDelete(id){
 }
 function confirmDelete(){
   if(!pendingDelete)return;
-  schedules=schedules.filter(function(s){return s.id!==pendingDelete;});
+  var s=schedules.find(function(x){return x.id===pendingDelete;});
+  schedules=schedules.filter(function(x){return x.id!==pendingDelete;});
   saveData('schedules_v2',schedules);
+  // 急診刀刪除時，同步清除對應急診記錄
+  if(s&&s.emergency){
+    var dr=getUser(s.doctor);
+    var drName=dr?dr.name:s.doctor;
+    emergencyLogs=emergencyLogs.filter(function(e){
+      return !(e.date===s.date && e.session===s.session && e.emergencyDoctor===drName && e.emergencyOpname===s.opname);
+    });
+    saveData('emergency_logs',emergencyLogs);
+  }
   addLog('刪除排程 ID：'+pendingDelete,'is-close');
   showToast('✓ 已刪除');
   closeModal('delete-modal');pendingDelete=null;
