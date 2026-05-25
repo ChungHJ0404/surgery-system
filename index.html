@@ -50,6 +50,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
   .form-grid.three{grid-template-columns:1fr;}
   .or-grid-header{grid-template-columns:70px repeat(4,1fr);}
   .or-grid-row{grid-template-columns:70px repeat(4,1fr);}
+  .or-grid-header-row{display:none;}
+  .card-title{flex-direction:row;align-items:center;gap:8px;}
   .card{padding:14px;}
   .card-title{flex-direction:column;align-items:flex-start;gap:8px;}
   .list-header,.list-row{font-size:12px;}
@@ -801,31 +803,80 @@ function initUI(){
 }
 
 // ══ 今日刀表 ══
+function isMobile(){ return window.innerWidth <= 768; }
+
 function renderDashboard(){
   var dateVal=document.getElementById('dashboard-date').value;
   var sessions=['08:00','10:00','13:00','15:00'];
   var body=document.getElementById('or-grid-body');body.innerHTML='';
   var ts=schedules.filter(function(s){return s.date===dateVal;});
-  ors.forEach(function(or){
-    var row=document.createElement('div');row.className='or-grid-row';
-    var lbl='<div class="or-grid-label"><span class="or-dot '+(or.open?'dot-open':'dot-closed')+'"></span>'+or.name+'</div>';
-    if(!or.open){row.innerHTML=lbl+'<div class="slot slot-closed" style="grid-column:span 4">🔒 停用中'+(or.reason?' — '+or.reason:'')+(or.until?' 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'')+'</div>';body.appendChild(row);return;}
-    var cells=lbl;
-    sessions.forEach(function(sess){
-      var m=ts.filter(function(s){return s.or===or.id&&s.session===sess;});
-      if(!m.length){cells+='<div class="slot slot-empty">空</div>';}
-      else if(m.length>1){
-        var em=m.filter(function(s){return s.emergency;});
-        cells+='<div class="slot slot-conflict"><div class="slot-name">⚠ '+(em.length?'急診插刀':'衝突')+'</div><div class="slot-sub">'+m.length+' 筆</div></div>';
-      }else{
-        var s=m[0];var dr=getUser(s.doctor);
-        var cl=s.emergency?'slot-emergency':'slot-normal';
-        cells+='<div class="slot '+cl+'"><div class="slot-name">'+(s.emergency?'🚨 ':'')+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+'</div></div>';
+
+  if(isMobile()){
+    // ── 手機版：每個刀房一張卡片 ──
+    ors.forEach(function(or){
+      var card=document.createElement('div');
+      card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;';
+      // 刀房標題列
+      var header='<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:'+(or.open?'var(--green-bg)':'var(--gray-bg)')+';border-bottom:1px solid var(--border-light)">'
+        +'<span style="width:8px;height:8px;border-radius:50%;background:'+(or.open?'var(--green)':'var(--text-3)')+';flex-shrink:0;display:inline-block"></span>'
+        +'<span style="font-size:13px;font-weight:700;color:'+(or.open?'var(--green)':'var(--text-3)')+'">'+or.name+'</span>'
+        +(or.open?'<span style="margin-left:auto;font-size:11px;color:var(--green)">開放中</span>':'<span style="margin-left:auto;font-size:11px;color:var(--text-3)">停用中</span>')
+        +'</div>';
+      if(!or.open){
+        card.innerHTML=header+'<div style="padding:12px 14px;font-size:12px;color:var(--text-3)">🔒 '+(or.reason||'停用中')+(or.until?' — 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'')+'</div>';
+        body.appendChild(card);return;
       }
+      var slots='<div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;">';
+      sessions.forEach(function(sess){
+        var m=ts.filter(function(s){return s.or===or.id&&s.session===sess;});
+        if(!m.length){
+          slots+='<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:var(--radius);border:1px dashed var(--border)">'
+            +'<span style="font-size:12px;font-weight:600;color:var(--text-3);min-width:42px">'+sess+'</span>'
+            +'<span style="font-size:12px;color:var(--text-3)">空</span></div>';
+        }else if(m.length>1){
+          slots+='<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)">'
+            +'<span style="font-size:12px;font-weight:600;color:var(--red);min-width:42px">'+sess+'</span>'
+            +'<span style="font-size:12px;color:var(--red);font-weight:500">⚠ 衝突 '+m.length+' 筆</span></div>';
+        }else{
+          var s=m[0];var dr=getUser(s.doctor);
+          var bg=s.emergency?'var(--orange-bg)':'var(--green-bg)';
+          var bc=s.emergency?'var(--orange-border)':'var(--green-border)';
+          var tc=s.emergency?'var(--orange)':'var(--green)';
+          slots+='<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:'+bg+';border-radius:var(--radius);border:1px solid '+bc+'">'
+            +'<span style="font-size:12px;font-weight:700;color:'+tc+';min-width:42px;padding-top:1px">'+sess+'</span>'
+            +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+            +'<div style="font-size:11px;color:var(--text-2);margin-top:2px">'+(dr?dr.name:'?')+(s.patname?' · '+s.patname:'')+'</div>'
+            +'</div></div>';
+        }
+      });
+      slots+='</div>';
+      card.innerHTML=header+slots;
+      body.appendChild(card);
     });
-    row.innerHTML=cells;body.appendChild(row);
-  });
-  // 統計
+  } else {
+    // ── 桌面版：原本的 grid ──
+    ors.forEach(function(or){
+      var row=document.createElement('div');row.className='or-grid-row';
+      var lbl='<div class="or-grid-label"><span class="or-dot '+(or.open?'dot-open':'dot-closed')+'"></span>'+or.name+'</div>';
+      if(!or.open){row.innerHTML=lbl+'<div class="slot slot-closed" style="grid-column:span 4">🔒 停用中'+(or.reason?' — '+or.reason:'')+(or.until?' 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'')+'</div>';body.appendChild(row);return;}
+      var cells=lbl;
+      sessions.forEach(function(sess){
+        var m=ts.filter(function(s){return s.or===or.id&&s.session===sess;});
+        if(!m.length){cells+='<div class="slot slot-empty">空</div>';}
+        else if(m.length>1){
+          var em=m.filter(function(s){return s.emergency;});
+          cells+='<div class="slot slot-conflict"><div class="slot-name">⚠ '+(em.length?'急診插刀':'衝突')+'</div><div class="slot-sub">'+m.length+' 筆</div></div>';
+        }else{
+          var s=m[0];var dr=getUser(s.doctor);
+          var cl=s.emergency?'slot-emergency':'slot-normal';
+          cells+='<div class="slot '+cl+'"><div class="slot-name">'+(s.emergency?'🚨 ':'')+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+'</div></div>';
+        }
+      });
+      row.innerHTML=cells;body.appendChild(row);
+    });
+  }
+
   var em=ts.filter(function(s){return s.emergency;}).length;
   var cc=ors.filter(function(o){return !o.open;}).length;
   document.getElementById('stat-grid').innerHTML=
@@ -833,7 +884,6 @@ function renderDashboard(){
     sc('急診插刀','color:var(--orange)',em,'今日')+
     sc('停用刀房','color:var(--red)',cc,cc?ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無')+
     sc('本月手術','color:var(--green)',schedules.filter(function(s){var d=new Date(s.date),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length,'台');
-  // 急診統計
   renderEmergencyStats();
 }
 function sc(l,s,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="'+s+'">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
@@ -998,20 +1048,40 @@ function renderList(){
     return true;
   }).sort(function(a,b){return a.date>b.date?1:a.date<b.date?-1:0;});
   var isAdmin=currentUser.role==='admin';
-  var html='<div class="list-header"><span class="col-wide">術式</span><span class="col">醫師</span><span class="col">日期</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:32px"></span></div>';
-  if(!f.length)html+='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';
-  else f.forEach(function(s){
-    var dr=getUser(s.doctor),or=getOR(s.or);
-    var canDel=isAdmin||(s.createdBy===currentUser.code);
-    html+='<div class="list-row">'
-      +'<div class="col-wide" style="font-weight:500">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-      +'<div class="col">'+(dr?dr.name:'?')+'</div>'
-      +'<div class="col">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+'</div>'
-      +'<div class="col">'+(or?or.name:'?')+'</div>'
-      +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
-      +'<div style="width:32px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:12px" onclick="askDelete(\''+s.id+'\')">✕</button>':'')+'</div>'
-      +'</div>';
-  });
+  var html='';
+  if(isMobile()){
+    if(!f.length){html='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';}
+    else f.forEach(function(s){
+      var dr=getUser(s.doctor),or=getOR(s.or);
+      var canDel=isAdmin||(s.createdBy===currentUser.code);
+      var bg=s.emergency?'var(--orange-bg)':'var(--surface)';
+      var bc=s.emergency?'1px solid var(--orange-border)':'1px solid var(--border)';
+      html+='<div style="background:'+bg+';border:'+bc+';border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+        +'<div style="font-size:12px;color:var(--text-2);margin-bottom:2px">'+(dr?dr.name:'?')+(s.patname?' · '+s.patname:'')+'</div>'
+        +'<div style="font-size:11px;color:var(--text-3)">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+' · '+(or?or.name:'?')+'</div>'
+        +'</div>'
+        +(canDel?'<button style="flex-shrink:0;background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:4px 10px;font-size:12px;cursor:pointer" onclick="askDelete(\''+s.id+'\')">刪除</button>':'')
+        +'</div></div>';
+    });
+  } else {
+    html='<div class="list-header"><span class="col-wide">術式</span><span class="col">醫師</span><span class="col">日期</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:32px"></span></div>';
+    if(!f.length)html+='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';
+    else f.forEach(function(s){
+      var dr=getUser(s.doctor),or=getOR(s.or);
+      var canDel=isAdmin||(s.createdBy===currentUser.code);
+      html+='<div class="list-row">'
+        +'<div class="col-wide" style="font-weight:500">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+        +'<div class="col">'+(dr?dr.name:'?')+'</div>'
+        +'<div class="col">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+'</div>'
+        +'<div class="col">'+(or?or.name:'?')+'</div>'
+        +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
+        +'<div style="width:32px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:12px" onclick="askDelete(\''+s.id+'\')">✕</button>':'')+'</div>'
+        +'</div>';
+    });
+  }
   document.getElementById('list-body').innerHTML=html;
 }
 
