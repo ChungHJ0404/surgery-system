@@ -374,6 +374,10 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
             <div class="form-group"><label>主刀醫師 *</label><select id="f-doctor"></select></div>
             <div class="form-group"><label>病歷號</label><input type="text" id="f-chartno" placeholder="輸入病歷號"></div>
           </div>
+          <div class="form-grid">
+            <div class="form-group"><label>病患姓名</label><input type="text" id="f-patname" placeholder="輸入病患姓名"></div>
+            <div class="form-group"></div>
+          </div>
           <div class="form-grid full">
             <div class="form-group">
               <label>術式名稱 * <span style="font-size:11px;color:var(--text-3);font-weight:400">（可選擇或直接輸入）</span></label>
@@ -412,6 +416,15 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
 
       <!-- 統計報表 -->
       <div class="page" id="page-stats">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <span style="font-size:16px;font-weight:700">統計報表</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:12px;color:var(--text-3)">目標台數：月</span>
+            <input type="number" id="target-month" min="1" max="999" style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
+            <span style="font-size:12px;color:var(--text-3)">年</span>
+            <input type="number" id="target-year" min="1" max="9999" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
+          </div>
+        </div>
         <div class="stat-grid" id="stat-grid-2"></div>
         <div class="card"><div class="card-title">各醫師手術量（本月）</div><div class="bar-wrap" id="doctor-bars"></div></div>
         <div class="card"><div class="card-title">各刀房使用狀況（本月）</div><div class="bar-wrap" id="or-bars"></div></div>
@@ -813,7 +826,7 @@ function checkConflict(){
   }
 }
 function resetForm(){
-  ['f-date','f-chartno','f-opname','f-note'].forEach(function(id){document.getElementById(id).value='';});
+  ['f-date','f-chartno','f-opname','f-note','f-patname'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('f-emergency').checked=false;
   document.getElementById('add-banners').innerHTML='';
   toggleEmergencyMode();
@@ -861,7 +874,7 @@ function doAddSchedule(p){
   var rec={id:genId(),date:p.date,or:p.orId,session:p.sess,duration:p.dur,
     doctor:p.doctor,opname:p.opname,
     chartno:document.getElementById('f-chartno').value.trim(),
-    anesthesia:'',note:document.getElementById('f-note').value.trim(),
+    patname:document.getElementById('f-patname').value.trim(),note:document.getElementById('f-note').value.trim(),
     emergency:p.isEm,
     created:toDateStr(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
     createdBy:currentUser.code};
@@ -933,12 +946,22 @@ function exportCSV(){
     if(p==='year')return d.getFullYear()===now.getFullYear();
     return true;
   });
-  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病歷號','預估時間(hr)','類型','備註']];
-  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([s.date,s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.chartno,s.duration,s.emergency?'急診':'一般',s.note]);});
+  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病歷號','病患姓名','預估時間(hr)','類型','備註']];
+  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([s.date,s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.chartno||'',s.patname||'',s.duration,s.emergency?'急診':'一般',s.note]);});
   var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='手術排程_'+toDateStr(now)+'.csv';a.click();URL.revokeObjectURL(url);
   showToast('✓ CSV 已下載');
+}
+
+// ══ 目標台數 ══
+function saveTargets(){
+  var m=document.getElementById('target-month').value;
+  var y=document.getElementById('target-year').value;
+  if(m) localStorage.setItem('targetMonth', m);
+  if(y) localStorage.setItem('targetYear', y);
+  renderStats();
+  showToast('✓ 目標台數已儲存');
 }
 
 // ══ 統計 ══
@@ -947,9 +970,13 @@ function renderStats(){
   var mo=schedules.filter(function(s){var d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var yr=schedules.filter(function(s){return new Date(s.date).getFullYear()===now.getFullYear();});
   var moEm=mo.filter(function(s){return s.emergency;});
+  var tMonth = parseInt(localStorage.getItem('targetMonth')||'80');
+  var tYear  = parseInt(localStorage.getItem('targetYear')||'800');
+  document.getElementById('target-month').value = tMonth;
+  document.getElementById('target-year').value  = tYear;
   document.getElementById('stat-grid-2').innerHTML=
-    sc('本月手術總數','color:var(--text)',mo.length,'目標 80 台')+
-    sc('本年累計','color:var(--blue)',yr.length,'目標 800 台')+
+    sc('本月手術總數','color:var(--text)',mo.length,'目標 '+tMonth+' 台')+
+    sc('本年累計','color:var(--blue)',yr.length,'目標 '+tYear+' 台')+
     sc('本月急診插刀','color:var(--orange)',moEm.length,'台')+
     sc('醫師人數','color:var(--purple)',users.filter(function(u){return u.role==='doctor';}).length,'位醫師');
 
@@ -1088,3 +1115,178 @@ function showPage(id,btn){
 </script>
 </body>
 </html>
+<!-- sync patch: replace localStorage calls with Sheets API -->
+<script>
+// ══ Sheets 同步層 ══
+var SYNCING = false;
+
+// 啟動時從 Sheets 載入所有資料
+function loadFromSheets(callback) {
+  if (!SHEETS_URL) { if(callback) callback(); return; }
+  SYNCING = true;
+  showToast('⏳ 正在載入資料…');
+  api({action:'getAll'}, function(data) {
+    SYNCING = false;
+    if (data.status !== 'ok') { showToast('⚠️ 無法連線 Sheets，使用本地資料'); if(callback)callback(); return; }
+    // 合併使用者（以 Sheets 為主，保留本地管理員）
+    if (data.users && data.users.length) {
+      var localAdmin = users.filter(function(u){return u.role==='admin';});
+      var sheetsUsers = data.users;
+      // 確保本地管理員也在
+      localAdmin.forEach(function(a){
+        if(!sheetsUsers.find(function(u){return u.code===a.code;})) sheetsUsers.push(a);
+      });
+      users = sheetsUsers;
+      saveData('users_v2', users);
+    }
+    if (data.schedules) { schedules = data.schedules; saveData('schedules_v2', schedules); }
+    if (data.ors && data.ors.length) { ors = data.ors; saveData('ors_v2', ors); }
+    if (data.emergencyLogs) { emergencyLogs = data.emergencyLogs; saveData('emergency_logs', emergencyLogs); }
+    showToast('✓ 資料已同步');
+    if(callback) callback();
+  });
+}
+
+// 共用 POST 函式
+function api(body, callback) {
+  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    // no-cors 無法讀 response body，視為成功
+    if(callback) callback({status:'ok'});
+  }).catch(function(e) {
+    console.error('API error:', e);
+    if(callback) callback({status:'error', message:e.toString()});
+  });
+}
+
+// 有回傳值的 POST（用 redirect trick）
+function apiRead(body, callback) {
+  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json(); })
+  .then(function(d){ if(callback) callback(d); })
+  .catch(function(e){ if(callback) callback({status:'error', message:e.toString()}); });
+}
+
+// ══ 覆寫 doAddSchedule，同步到 Sheets ══
+var _origDoAdd = doAddSchedule;
+doAddSchedule = function(p) {
+  _origDoAdd(p);
+  if (SHEETS_URL) {
+    api({
+      action:'addSchedule',
+      date:p.date, or:p.orId, session:p.sess, duration:p.dur,
+      doctor:p.doctor, opname:p.opname,
+      chartno:document.getElementById('f-chartno').value.trim(),
+      patname:document.getElementById('f-patname').value.trim(),
+      note:document.getElementById('f-note').value.trim(),
+      emergency:p.isEm, createdBy:currentUser.code
+    });
+  }
+};
+
+// ══ 覆寫 confirmDelete，同步到 Sheets ══
+var _origConfDel = confirmDelete;
+confirmDelete = function() {
+  var delId = pendingDelete;
+  _origConfDel();
+  if (SHEETS_URL && delId && String(delId).indexOf('OR_') !== 0) {
+    api({action:'deleteSchedule', id:delId, actor:currentUser.code});
+  }
+};
+
+// ══ 覆寫 confirmEmergency，同步急診記錄 ══
+var _origConfEm = confirmEmergency;
+confirmEmergency = function() {
+  var p = pendingEmergency;
+  _origConfEm();
+  if (SHEETS_URL && p) {
+    api({
+      action:'addEmergencyLog',
+      date:p.date, orName:p.or.name, session:p.sess,
+      emergencyDoctor:currentUser.name,
+      emergencyOpname:p.opname,
+      blockedDoctor:p.cdr?p.cdr.name:p.conflict.doctor,
+      blockedOpname:p.conflict.opname
+    });
+  }
+};
+
+// ══ 覆寫 saveOR，同步刀房到 Sheets ══
+var _origSaveOR = saveOR;
+saveOR = function(id) {
+  _origSaveOR(id);
+  if (SHEETS_URL) {
+    api({action:'saveOR', ors:ors, actor:currentUser.code});
+  }
+};
+
+// ══ 覆寫 confirmClose / reopenOR，同步刀房 ══
+var _origConfClose = confirmClose;
+confirmClose = function(id) {
+  _origConfClose(id);
+  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+};
+var _origReopenOR = reopenOR;
+reopenOR = function(id) {
+  _origReopenOR(id);
+  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+};
+
+// ══ 覆寫 confirmAddOR / confirmDelete(OR)，同步刀房 ══
+var _origConfAddOR = confirmAddOR;
+confirmAddOR = function() {
+  _origConfAddOR();
+  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+};
+
+// ══ 覆寫 doRegister，同步使用者 ══
+var _origDoReg = doRegister;
+doRegister = function() {
+  // 先從 Sheets 確認代號是否重複，再註冊
+  var code = document.getElementById('reg-code').value.trim();
+  var name = document.getElementById('reg-name').value.trim();
+  var pw   = document.getElementById('reg-pw').value;
+  var pw2  = document.getElementById('reg-pw2').value;
+  var err  = document.getElementById('reg-error'); err.style.display='none';
+  if(!code||!name||!pw||!pw2){err.textContent='請填寫所有欄位';err.style.display='block';return;}
+  if(pw.length<6){err.textContent='密碼至少需要 6 個字元';err.style.display='block';return;}
+  if(pw!==pw2){err.textContent='兩次密碼不一致';err.style.display='block';return;}
+  if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
+  var now=new Date();
+  var nu={code:code,name:name,pw:hashPw(pw),role:'doctor',createdAt:toDateStr(now)};
+  users.push(nu); saveData('users_v2',users);
+  if(SHEETS_URL) api({action:'addUser',code:nu.code,name:nu.name,pw:nu.pw,role:'doctor',createdAt:nu.createdAt});
+  currentUser=nu;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('main-app').style.display='flex';
+  showToast('✓ 註冊成功，歡迎 '+name+'！');
+  initUI();
+};
+
+// ══ 覆寫 initUI，登入後先同步資料 ══
+var _origInitUI = initUI;
+initUI = function() {
+  _origInitUI();
+  if (SHEETS_URL) {
+    setTimeout(function() {
+      loadFromSheets(function() {
+        populateDoctorSelect();
+        populateORSelect();
+        renderDashboard();
+        renderList();
+        renderStats();
+        if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
+      });
+    }, 300);
+  }
+};
+</script>
