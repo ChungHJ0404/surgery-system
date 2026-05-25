@@ -794,35 +794,53 @@ function doLogin(){
   var pw=document.getElementById('login-pw').value;
   var err=document.getElementById('login-error');err.style.display='none';
   if(!code||!pw){err.textContent='請填寫代號與密碼';err.style.display='block';return;}
-  // 先從本地找
-  var u=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-  // 本地找不到或密碼不對，從 Sheets 重新載入再試
-  if(!u||u.pw!==hashPw(pw)){
-    if(SHEETS_URL){
-      var overlay=document.getElementById('loading-overlay');
-      if(overlay)overlay.style.display='flex';
-      apiGet({action:'getAll'},function(data){
-        if(overlay)overlay.style.display='none';
-        if(data&&data.status==='ok'){
-          if(data.users&&data.users.length){users=data.users;saveData('users_v2',users);}
-          if(data.ors&&data.ors.length){ors=data.ors;saveData('ors_v2',ors);}
-          if(data.schedules){schedules=data.schedules.map(function(s){s.date=normDate(s.date);return s;});saveData('schedules_v2',schedules);}
-        }
-        var u2=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-        if(!u2||u2.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
-        currentUser=u2;
-        document.getElementById('auth-screen').style.display='none';
-        document.getElementById('main-app').style.display='flex';
-        initUI();
-      });
-      return;
+
+  // 確保預設 admin 帳號永遠存在
+  var defaultAdmins = DEFAULT_USERS.filter(function(u){ return isAdminRole(u.role); });
+  defaultAdmins.forEach(function(a){
+    if(!users.find(function(u){ return u.code.toLowerCase()===a.code.toLowerCase(); })){
+      users.push(a); saveData('users_v2', users);
     }
-    err.textContent='代號或密碼不正確';err.style.display='block';return;
+  });
+
+  var u=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+  if(u && u.pw===hashPw(pw)){
+    currentUser=u;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    initUI();
+    return;
   }
-  currentUser=u;
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('main-app').style.display='flex';
-  initUI();
+
+  // 本地找不到或密碼不對，從 Sheets 重新載入再試
+  if(SHEETS_URL){
+    var overlay=document.getElementById('loading-overlay');
+    if(overlay)overlay.style.display='flex';
+    apiGet({action:'getAll'},function(data){
+      if(overlay)overlay.style.display='none';
+      if(data&&data.status==='ok'){
+        if(data.users&&data.users.length){
+          var su=data.users;
+          defaultAdmins.forEach(function(a){
+            var ex=su.find(function(u){return u.code.toLowerCase()===a.code.toLowerCase();});
+            if(!ex) su.push(a);
+            else ex.role='admin';
+          });
+          users=su; saveData('users_v2',users);
+        }
+        if(data.ors&&data.ors.length){ors=data.ors;saveData('ors_v2',ors);}
+        if(data.schedules){schedules=data.schedules.map(function(s){s.date=normDate(s.date);return s;});saveData('schedules_v2',schedules);}
+      }
+      var u2=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+      if(!u2||u2.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
+      currentUser=u2;
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('main-app').style.display='flex';
+      initUI();
+    });
+    return;
+  }
+  err.textContent='代號或密碼不正確';err.style.display='block';
 }
 function doRegister(){
   var code=document.getElementById('reg-code').value.trim();
@@ -1442,10 +1460,16 @@ function loadFromSheets(callback) {
     }
     // 更新使用者
     if (data.users && data.users.length) {
-      var localAdmin = users.filter(function(u){return isAdminRole(u.role);});
       var sheetsUsers = data.users;
-      localAdmin.forEach(function(a){
-        if(!sheetsUsers.find(function(u){return u.code===a.code;})) sheetsUsers.push(a);
+      // 確保本地 admin 帳號永遠保留
+      var localAdmins = loadData('users_v2', DEFAULT_USERS).filter(function(u){ return isAdminRole(u.role); });
+      localAdmins.forEach(function(a){
+        var exists = sheetsUsers.find(function(u){ return u.code.toLowerCase()===a.code.toLowerCase(); });
+        if(!exists) sheetsUsers.push(a);
+        else {
+          // Sheets 有 admin 但角色名稱可能是中文，統一修正
+          exists.role = 'admin';
+        }
       });
       users = sheetsUsers;
       saveData('users_v2', users);
