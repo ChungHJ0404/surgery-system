@@ -1532,15 +1532,18 @@ initUI = function() {
       populateORSelect();
       var today = toDateStr(new Date());
       var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
+      var uniqueDates = dates.filter(function(d,i){ return dates.indexOf(d)===i; });
       var best = today;
-      if(dates.length) {
-        var future = dates.filter(function(d){return d>=today;}).sort();
-        var past   = dates.filter(function(d){return d<today;}).sort().reverse();
+      if(uniqueDates.length) {
+        var future = uniqueDates.filter(function(d){return d>=today;}).sort();
+        var past   = uniqueDates.filter(function(d){return d<today;}).sort().reverse();
         if(future.length) best = future[0];
         else if(past.length) best = past[0];
       }
-      document.getElementById('dashboard-date').value = best;
-      renderDashboard();
+      var datePicker = document.getElementById('dashboard-date');
+      datePicker.value = best;
+      // 強制觸發一次 render 確保日期有套用
+      setTimeout(function(){ renderDashboard(); }, 50);
       renderList();
       renderStats();
       if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
