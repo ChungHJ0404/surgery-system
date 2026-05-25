@@ -3,255 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>手術排程系統</title>
+<title>心臟血管外科 手術排程系統</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
-  :root {
-    --bg:#f5f6f8;--surface:#fff;--border:#e4e6ea;--border-light:#f0f1f4;
-    --text:#1a1d23;--text-2:#5a6072;--text-3:#9aa0b2;
-    --green:#1a9e72;--green-bg:#eaf7f2;--green-border:#a3dfc9;
-    --blue:#2563eb;--blue-bg:#eff4ff;--blue-border:#93b4f8;
-    --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fcd34d;
-    --red:#dc2626;--red-bg:#fff1f1;--red-border:#fca5a5;
-    --gray-bg:#f1f2f5;--gray-border:#d1d5db;
-    --purple:#7c3aed;--purple-bg:#f3f0ff;
-    --radius:8px;--radius-lg:12px;
-    --shadow-md:0 4px 12px rgba(0,0,0,.10);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
-  .app{display:flex;min-height:100vh;}
-  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
-  .main{margin-left:220px;flex:1;min-height:100vh;}
-  .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border-light);}
-  .sidebar-logo h1{font-size:15px;font-weight:700;}
-  .sidebar-logo span{font-size:12px;color:var(--text-3);}
-  .sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
-  .nav-item:hover{background:var(--bg);color:var(--text);}
-  .nav-item.active{background:var(--green-bg);color:var(--green);}
-  .nav-item svg{width:16px;height:16px;flex-shrink:0;}
-  .sidebar-footer{padding:12px 14px;border-top:1px solid var(--border-light);}
-  .user-info{display:flex;align-items:center;gap:10px;}
-  .user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
-  .avatar-admin{background:var(--purple-bg);color:var(--purple);}
-  .avatar-dr{background:var(--green-bg);color:var(--green);}
-  .user-name{font-size:13px;font-weight:500;}
-  .user-role{font-size:11px;color:var(--text-3);}
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-  .topbar-title{font-size:16px;font-weight:700;}
-  .content{padding:24px;}
-  .page{display:none;}
-  .page.active{display:block;}
-  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;}
-  .stat-label{font-size:12px;color:var(--text-3);margin-bottom:6px;font-weight:500;}
-  .stat-value{font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;}
-  .stat-sub{font-size:12px;color:var(--text-3);}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:16px;}
-  .card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:inherit;}
-  .btn-primary{background:var(--green);color:#fff;border-color:var(--green);}
-  .btn-primary:hover{opacity:.88;}
-  .btn-secondary{background:transparent;color:var(--text-2);border-color:var(--border);}
-  .btn-secondary:hover{background:var(--bg);}
-  .btn-danger{background:transparent;color:var(--red);border-color:var(--red-border);}
-  .btn-danger:hover{background:var(--red-bg);}
-  .btn-sm{padding:4px 10px;font-size:12px;}
-  .badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
-  .badge-green{background:var(--green-bg);color:var(--green);}
-  .badge-amber{background:var(--amber-bg);color:var(--amber);}
-  .badge-red{background:var(--red-bg);color:var(--red);}
-  .badge-gray{background:var(--gray-bg);color:var(--text-2);}
-  .badge-blue{background:var(--blue-bg);color:var(--blue);}
-  .badge-purple{background:var(--purple-bg);color:var(--purple);}
-  .or-grid-wrap{overflow-x:auto;}
-  .or-grid{min-width:640px;}
-  .or-grid-header{display:grid;grid-template-columns:90px repeat(4,1fr);gap:6px;margin-bottom:6px;}
-  .or-grid-header-cell{font-size:11px;color:var(--text-3);font-weight:600;text-align:center;padding:4px 0;}
-  .or-grid-row{display:grid;grid-template-columns:90px repeat(4,1fr);gap:6px;margin-bottom:6px;align-items:center;}
-  .or-grid-label{font-size:12px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:5px;}
-  .or-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .dot-open{background:var(--green);}
-  .dot-closed{background:var(--text-3);}
-  .slot{border-radius:var(--radius);padding:8px 10px;min-height:52px;font-size:12px;}
-  .slot-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .slot-sub{font-size:11px;opacity:.8;margin-top:1px;}
-  .slot-empty{background:var(--bg);border:1px dashed var(--border);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:11px;}
-  .slot-done{background:var(--green-bg);border:1px solid var(--green-border);color:#0a5c3e;}
-  .slot-ongoing{background:var(--amber-bg);border:1px solid var(--amber-border);color:#854d0e;}
-  .slot-pending{background:var(--blue-bg);border:1px solid var(--blue-border);color:#1e40af;}
-  .slot-conflict{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
-  .slot-closed{background:var(--gray-bg);border:1px solid var(--gray-border);color:var(--text-3);display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;grid-column:span 4;}
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-  .form-grid.full{grid-template-columns:1fr;}
-  .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
-  .form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border .15s;}
-  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);}
-  .form-group textarea{height:80px;resize:vertical;}
-  .banner{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:14px;}
-  .banner-warn{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
-  .banner-info{background:var(--amber-bg);border:1px solid var(--amber-border);color:#854d0e;}
-  .banner-success{background:var(--green-bg);border:1px solid var(--green-border);color:#0a5c3e;}
-  .list-header{display:flex;gap:12px;padding:0 0 8px;border-bottom:1px solid var(--border-light);font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
-  .list-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-light);font-size:13px;}
-  .list-row:last-child{border-bottom:none;}
-  .col-wide{flex:2;}
-  .col{flex:1;color:var(--text-2);}
-  .col-sm{flex:.7;}
-  .bar-wrap{display:flex;flex-direction:column;gap:14px;}
-  .bar-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
-  .bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
-  .bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .6s ease;}
-  .or-block{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;background:var(--surface);}
-  .or-block.is-closed{background:var(--gray-bg);}
-  .or-block-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-  .or-num-badge{width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
-  .or-num-open{background:var(--green-bg);color:var(--green);}
-  .or-num-closed{background:var(--gray-bg);color:var(--text-3);}
-  .or-name-wrap{flex:1;}
-  .or-name-display{font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px dashed var(--border);display:inline-block;}
-  .or-name-display:hover{color:var(--green);}
-  .or-name-input{font-size:15px;font-weight:700;border:none;border-bottom:2px solid var(--green);background:transparent;color:var(--text);outline:none;width:200px;padding:1px 4px;font-family:inherit;}
-  .edit-hint{font-size:11px;color:var(--text-3);margin-top:2px;}
-  .toggle{position:relative;width:38px;height:22px;display:inline-block;flex-shrink:0;}
-  .toggle input{opacity:0;width:0;height:0;}
-  .toggle-slider{position:absolute;inset:0;background:var(--gray-border);border-radius:11px;transition:.2s;cursor:pointer;}
-  .toggle input:checked+.toggle-slider{background:var(--green);}
-  .toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
-  .toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
-  .week-section{margin-top:12px;}
-  .week-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-  .day-col{display:flex;flex-direction:column;gap:3px;}
-  .day-name{font-size:11px;color:var(--text-3);text-align:center;font-weight:600;margin-bottom:2px;}
-  .sess-btn{padding:5px 0;font-size:11px;border-radius:5px;border:1px solid var(--border);cursor:pointer;text-align:center;background:var(--bg);color:var(--text-3);font-weight:500;transition:all .15s;font-family:inherit;}
-  .sess-btn:hover:not(.locked){border-color:var(--green);color:var(--green);}
-  .sess-btn.am-on{background:var(--green-bg);color:var(--green);border-color:var(--green-border);font-weight:600;}
-  .sess-btn.pm-on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600;}
-  .sess-btn.locked{opacity:.45;pointer-events:none;}
-  .close-form-panel{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;}
-  .close-form-panel.show{display:block;}
-  .log-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:12px;}
-  .log-item:last-child{border-bottom:none;}
-  .log-time{color:var(--text-3);min-width:88px;flex-shrink:0;}
-  .log-actor{font-weight:600;min-width:60px;flex-shrink:0;}
-  .log-msg{color:var(--text-2);}
-  .log-msg.is-close{color:var(--red);}
-  .log-msg.is-open{color:var(--green);}
-  .log-msg.is-edit{color:var(--blue);}
-  #toast{position:fixed;bottom:20px;right:20px;background:#1a2030;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
-  #toast.show{opacity:1;}
-
-  /* ══ 登入 / 註冊畫面 ══ */
-  #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
-  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:400px;box-shadow:var(--shadow-md);}
-  .auth-logo{font-size:28px;text-align:center;margin-bottom:8px;}
-  .auth-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
-  .auth-sub{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:24px;}
-  .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;}
-  .auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
-  .auth-tab.active{color:var(--green);border-bottom-color:var(--green);}
-  .auth-panel{display:none;}
-  .auth-panel.active{display:block;}
-  .auth-field{margin-bottom:14px;}
-  .auth-field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
-  .auth-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;outline:none;transition:border .15s;}
-  .auth-field input:focus{border-color:var(--green);}
-  .auth-field .hint{font-size:11px;color:var(--text-3);margin-top:4px;}
-  .auth-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:4px;}
-  .auth-btn:hover{opacity:.88;}
-  .auth-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none;padding:8px;background:var(--red-bg);border-radius:var(--radius);}
-  .auth-success{font-size:12px;color:var(--green);margin-top:10px;text-align:center;display:none;padding:8px;background:var(--green-bg);border-radius:var(--radius);}
-  .pw-wrap{position:relative;}
-  .pw-wrap input{padding-right:36px;}
-  .pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-3);font-size:16px;background:none;border:none;padding:0;}
-  .pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all .3s;}
-  .strength-weak{background:var(--red);width:33%;}
-  .strength-medium{background:var(--amber);width:66%;}
-  .strength-strong{background:var(--green);width:100%;}
-  .setup-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-light);}
-  .setup-step:last-child{border-bottom:none;}
-  .step-num{width:28px;height:28px;border-radius:50%;background:var(--green-bg);color:var(--green);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
-  .step-body{flex:1;}
-  .step-title{font-weight:600;font-size:14px;margin-bottom:4px;}
-  .step-desc{font-size:13px;color:var(--text-2);}
-  .step-input{margin-top:8px;display:flex;gap:8px;}
-  .step-input input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;}
-  .step-input input:focus{border-color:var(--green);}
-  code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px;font-family:monospace;color:var(--text-2);}
-  .connected-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;background:var(--green-bg);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600;margin-top:8px;}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+:root{
+  --bg:#f5f6f8;--surface:#fff;--border:#e4e6ea;--border-light:#f0f1f4;
+  --text:#1a1d23;--text-2:#5a6072;--text-3:#9aa0b2;
+  --green:#1a9e72;--green-bg:#eaf7f2;--green-border:#a3dfc9;
+  --blue:#2563eb;--blue-bg:#eff4ff;--blue-border:#93b4f8;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fcd34d;
+  --red:#dc2626;--red-bg:#fff1f1;--red-border:#fca5a5;
+  --gray-bg:#f1f2f5;--gray-border:#d1d5db;
+  --purple:#7c3aed;--purple-bg:#f3f0ff;
+  --orange:#ea580c;--orange-bg:#fff7ed;--orange-border:#fed7aa;
+  --radius:8px;--radius-lg:12px;--shadow-md:0 4px 12px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+.app{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
+.main{margin-left:220px;flex:1;min-height:100vh;}
+.sidebar-logo{padding:16px 20px;border-bottom:1px solid var(--border-light);}
+.sidebar-logo h1{font-size:13px;font-weight:700;line-height:1.4;}
+.sidebar-logo span{font-size:11px;color:var(--text-3);}
+.sidebar-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--bg);color:var(--text);}
+.nav-item.active{background:var(--green-bg);color:var(--green);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border-light);}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.avatar-admin{background:var(--purple-bg);color:var(--purple);}
+.avatar-dr{background:var(--green-bg);color:var(--green);}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-size:16px;font-weight:700;}
+.content{padding:24px;}
+.page{display:none;}
+.page.active{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;}
+.stat-label{font-size:12px;color:var(--text-3);margin-bottom:6px;font-weight:500;}
+.stat-value{font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-sub{font-size:12px;color:var(--text-3);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:16px;}
+.card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:inherit;}
+.btn-primary{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-primary:hover{opacity:.88;}
+.btn-secondary{background:transparent;color:var(--text-2);border-color:var(--border);}
+.btn-secondary:hover{background:var(--bg);}
+.btn-danger{background:transparent;color:var(--red);border-color:var(--red-border);}
+.btn-danger:hover{background:var(--red-bg);}
+.btn-orange{background:var(--orange);color:#fff;border-color:var(--orange);}
+.btn-orange:hover{opacity:.88;}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:var(--gray-bg);color:var(--text-2);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+.badge-orange{background:var(--orange-bg);color:var(--orange);}
+.or-grid-wrap{overflow-x:auto;}
+.or-grid{min-width:640px;}
+.or-grid-header{display:grid;grid-template-columns:100px repeat(4,1fr);gap:6px;margin-bottom:6px;}
+.or-grid-header-cell{font-size:11px;color:var(--text-3);font-weight:600;text-align:center;padding:4px 0;}
+.or-grid-row{display:grid;grid-template-columns:100px repeat(4,1fr);gap:6px;margin-bottom:6px;align-items:center;}
+.or-grid-label{font-size:12px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:5px;}
+.or-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-open{background:var(--green);}
+.dot-closed{background:var(--text-3);}
+.slot{border-radius:var(--radius);padding:8px 10px;min-height:52px;font-size:12px;}
+.slot-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot-sub{font-size:11px;opacity:.8;margin-top:1px;}
+.slot-empty{background:var(--bg);border:1px dashed var(--border);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:11px;}
+.slot-normal{background:var(--green-bg);border:1px solid var(--green-border);color:#0a5c3e;}
+.slot-emergency{background:var(--orange-bg);border:1px solid var(--orange-border);color:#7c2d12;}
+.slot-conflict{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
+.slot-closed{background:var(--gray-bg);border:1px solid var(--gray-border);color:var(--text-3);display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;grid-column:span 4;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid.full{grid-template-columns:1fr;}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border .15s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);}
+.form-group textarea{height:80px;resize:vertical;}
+.banner{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:14px;}
+.banner-warn{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
+.banner-orange{background:var(--orange-bg);border:1px solid var(--orange-border);color:#7c2d12;}
+.list-header{display:flex;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border-light);font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.list-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border-light);font-size:13px;}
+.list-row:last-child{border-bottom:none;}
+.col-wide{flex:2.5;}
+.col{flex:1;color:var(--text-2);}
+.col-sm{flex:.6;}
+.bar-wrap{display:flex;flex-direction:column;gap:14px;}
+.bar-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+.bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .6s ease;}
+.bar-fill-orange{background:var(--orange);}
+.or-block{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;background:var(--surface);}
+.or-block.is-closed{background:var(--gray-bg);}
+.or-block-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.or-num-badge{width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
+.or-num-open{background:var(--green-bg);color:var(--green);}
+.or-num-closed{background:var(--gray-bg);color:var(--text-3);}
+.or-name-wrap{flex:1;}
+.or-name-display{font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px dashed var(--border);display:inline-block;}
+.or-name-display:hover{color:var(--green);}
+.or-name-input{font-size:15px;font-weight:700;border:none;border-bottom:2px solid var(--green);background:transparent;color:var(--text);outline:none;width:200px;padding:1px 4px;font-family:inherit;}
+.edit-hint{font-size:11px;color:var(--text-3);margin-top:2px;}
+.toggle{position:relative;width:38px;height:22px;display:inline-block;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--gray-border);border-radius:11px;transition:.2s;cursor:pointer;}
+.toggle input:checked+.toggle-slider{background:var(--green);}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
+.week-section{margin-top:12px;}
+.week-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.day-col{display:flex;flex-direction:column;gap:3px;}
+.day-name{font-size:11px;color:var(--text-3);text-align:center;font-weight:600;margin-bottom:2px;}
+.sess-btn{padding:5px 0;font-size:11px;border-radius:5px;border:1px solid var(--border);cursor:pointer;text-align:center;background:var(--bg);color:var(--text-3);font-weight:500;transition:all .15s;font-family:inherit;}
+.sess-btn:hover:not(.locked){border-color:var(--green);color:var(--green);}
+.sess-btn.am-on{background:var(--green-bg);color:var(--green);border-color:var(--green-border);font-weight:600;}
+.sess-btn.pm-on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600;}
+.sess-btn.locked{opacity:.45;pointer-events:none;}
+.close-form-panel{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;}
+.close-form-panel.show{display:block;}
+.log-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:12px;}
+.log-item:last-child{border-bottom:none;}
+.log-time{color:var(--text-3);min-width:88px;flex-shrink:0;}
+.log-actor{font-weight:600;min-width:60px;flex-shrink:0;}
+.log-msg{color:var(--text-2);}
+.log-msg.is-close{color:var(--red);}
+.log-msg.is-open{color:var(--green);}
+.log-msg.is-edit{color:var(--blue);}
+.log-msg.is-emergency{color:var(--orange);}
+#toast{position:fixed;bottom:20px;right:20px;background:#1a2030;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
+#toast.show{opacity:1;}
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:8000;display:none;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:420px;max-width:95vw;box-shadow:var(--shadow-md);}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+/* auth */
+#auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:400px;box-shadow:var(--shadow-md);}
+.auth-logo{font-size:28px;text-align:center;margin-bottom:8px;}
+.auth-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:24px;}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.auth-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+.auth-field{margin-bottom:14px;}
+.auth-field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
+.auth-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;outline:none;transition:border .15s;}
+.auth-field input:focus{border-color:var(--green);}
+.auth-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:4px;}
+.auth-btn:hover{opacity:.88;}
+.auth-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none;padding:8px;background:var(--red-bg);border-radius:var(--radius);}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:36px;}
+.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-3);font-size:16px;background:none;border:none;padding:0;}
+.pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all .3s;display:none;}
+.strength-weak{background:var(--red);width:33%;}
+.strength-medium{background:var(--amber);width:66%;}
+.strength-strong{background:var(--green);width:100%;}
+.setup-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-light);}
+.setup-step:last-child{border-bottom:none;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--green-bg);color:var(--green);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-body{flex:1;}
+.step-title{font-weight:600;font-size:14px;margin-bottom:4px;}
+.step-desc{font-size:13px;color:var(--text-2);}
+.step-input{margin-top:8px;display:flex;gap:8px;}
+.step-input input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;}
+.step-input input:focus{border-color:var(--green);}
+code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px;font-family:monospace;color:var(--text-2);}
+.connected-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;background:var(--green-bg);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600;margin-top:8px;}
+/* 急診橫幅 */
+.emergency-strip{background:var(--orange);color:#fff;font-size:12px;font-weight:700;padding:6px 20px;display:flex;align-items:center;gap:8px;}
+/* datalist combo */
+.combo-wrap{position:relative;}
 </style>
 </head>
 <body>
 
-<!-- ══ 登入 / 註冊畫面 ══ -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <div class="auth-logo">🏥</div>
-    <div class="auth-title">手術排程系統</div>
-    <div class="auth-sub">請登入或註冊帳號</div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login',this)">登入</div>
-      <div class="auth-tab" onclick="switchAuthTab('register',this)">註冊帳號</div>
+<!-- 急診插刀確認 Modal -->
+<div class="modal-overlay" id="emergency-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--orange)">🚨 急診插刀</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">此時段已有排程，急診插刀將記錄為衝突並通知統計。</p>
+    <div style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:4px">
+      <span id="emergency-conflict-info"></span>
     </div>
-
-    <!-- 登入 -->
-    <div class="auth-panel active" id="panel-login">
-      <div class="auth-field">
-        <label>代號</label>
-        <input type="text" id="login-code" placeholder="輸入你的代號" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()">
-      </div>
-      <div class="auth-field">
-        <label>密碼</label>
-        <div class="pw-wrap">
-          <input type="password" id="login-pw" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="pw-toggle" onclick="togglePw('login-pw',this)" tabindex="-1">👁</button>
-        </div>
-      </div>
-      <button class="auth-btn" onclick="doLogin()">登入</button>
-      <div class="auth-error" id="login-error"></div>
-    </div>
-
-    <!-- 註冊 -->
-    <div class="auth-panel" id="panel-register">
-      <div class="auth-field">
-        <label>代號 <span style="color:var(--text-3);font-weight:400">（登入用，不可重複）</span></label>
-        <input type="text" id="reg-code" placeholder="例：D001、Wang" maxlength="20" oninput="checkCodeAvailable()">
-        <div class="hint" id="code-hint" style="font-size:11px;margin-top:4px;color:var(--text-3)"></div>
-      </div>
-      <div class="auth-field">
-        <label>姓名</label>
-        <input type="text" id="reg-name" placeholder="輸入真實姓名" maxlength="20">
-      </div>
-      <div class="auth-field">
-        <label>密碼</label>
-        <div class="pw-wrap">
-          <input type="password" id="reg-pw" placeholder="至少 6 個字元" oninput="checkPwStrength()">
-          <button class="pw-toggle" onclick="togglePw('reg-pw',this)" tabindex="-1">👁</button>
-        </div>
-        <div class="pw-strength" id="pw-strength-bar" style="background:var(--border);width:100%;margin-top:6px;display:none"></div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:3px" id="pw-strength-text"></div>
-      </div>
-      <div class="auth-field">
-        <label>確認密碼</label>
-        <div class="pw-wrap">
-          <input type="password" id="reg-pw2" placeholder="再輸入一次密碼" onkeydown="if(event.key==='Enter')doRegister()">
-          <button class="pw-toggle" onclick="togglePw('reg-pw2',this)" tabindex="-1">👁</button>
-        </div>
-      </div>
-      <button class="auth-btn" onclick="doRegister()">註冊並登入</button>
-      <div class="auth-error" id="reg-error"></div>
-      <div class="auth-success" id="reg-success"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('emergency-modal')">取消</button>
+      <button class="btn btn-orange" onclick="confirmEmergency()">確認插刀</button>
     </div>
   </div>
 </div>
 
-<!-- ══ 主介面 ══ -->
+<!-- 刪除確認 Modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red)">⚠️ 確認刪除</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:4px" id="delete-modal-msg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('delete-modal')">取消</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">🫀</div>
+    <div class="auth-title">心臟血管外科</div>
+    <div class="auth-sub">手術排程系統</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login',this)">登入</div>
+      <div class="auth-tab" onclick="switchAuthTab('register',this)">註冊帳號</div>
+    </div>
+    <div class="auth-panel active" id="panel-login">
+      <div class="auth-field"><label>代號</label><input type="text" id="login-code" placeholder="輸入代號" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()"></div>
+      <div class="auth-field"><label>密碼</label>
+        <div class="pw-wrap"><input type="password" id="login-pw" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-toggle" onclick="togglePw('login-pw',this)" tabindex="-1">👁</button></div>
+      </div>
+      <button class="auth-btn" onclick="doLogin()">登入</button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+    <div class="auth-panel" id="panel-register">
+      <div class="auth-field"><label>代號</label><input type="text" id="reg-code" placeholder="例：D001" maxlength="20" oninput="checkCodeAvailable()">
+        <div style="font-size:11px;margin-top:4px" id="code-hint"></div>
+      </div>
+      <div class="auth-field"><label>姓名</label><input type="text" id="reg-name" placeholder="輸入真實姓名" maxlength="20"></div>
+      <div class="auth-field"><label>密碼</label>
+        <div class="pw-wrap"><input type="password" id="reg-pw" placeholder="至少 6 個字元" oninput="checkPwStrength()">
+        <button class="pw-toggle" onclick="togglePw('reg-pw',this)" tabindex="-1">👁</button></div>
+        <div class="pw-strength" id="pw-strength-bar"></div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:3px" id="pw-strength-text"></div>
+      </div>
+      <div class="auth-field"><label>確認密碼</label>
+        <div class="pw-wrap"><input type="password" id="reg-pw2" placeholder="再輸入一次" onkeydown="if(event.key==='Enter')doRegister()">
+        <button class="pw-toggle" onclick="togglePw('reg-pw2',this)" tabindex="-1">👁</button></div>
+      </div>
+      <button class="auth-btn" onclick="doRegister()">註冊並登入</button>
+      <div class="auth-error" id="reg-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
 <div class="app" id="main-app" style="display:none">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <h1>🏥 手術排程</h1>
+      <h1>🫀 心臟血管外科<br>手術排程系統</h1>
       <span id="sidebar-date"></span>
     </div>
     <nav class="sidebar-nav">
@@ -279,11 +292,11 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="user-info">
+      <div style="display:flex;align-items:center;gap:10px">
         <div class="user-avatar" id="sidebar-avatar">管</div>
         <div>
-          <div class="user-name" id="sidebar-name"></div>
-          <div class="user-role" id="sidebar-role-text"></div>
+          <div style="font-size:13px;font-weight:500" id="sidebar-name"></div>
+          <div style="font-size:11px;color:var(--text-3)" id="sidebar-role-text"></div>
         </div>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:10px;width:100%" onclick="doLogout()">登出</button>
@@ -293,8 +306,11 @@
   <main class="main">
     <div class="topbar">
       <div class="topbar-title" id="topbar-title">今日刀表</div>
-      <div class="topbar-right"><span id="topbar-date" style="font-size:13px;color:var(--text-3)"></span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="topbar-date" style="font-size:13px;color:var(--text-3)"></span>
+      </div>
     </div>
+
     <div class="content">
 
       <!-- 今日刀表 -->
@@ -308,13 +324,18 @@
           <div class="or-grid-wrap"><div class="or-grid">
             <div class="or-grid-header">
               <div></div>
-              <div class="or-grid-header-cell">08:00 上午</div>
-              <div class="or-grid-header-cell">10:00 上午</div>
-              <div class="or-grid-header-cell">13:00 下午</div>
-              <div class="or-grid-header-cell">15:00 下午</div>
+              <div class="or-grid-header-cell">08:00</div>
+              <div class="or-grid-header-cell">10:00</div>
+              <div class="or-grid-header-cell">13:00</div>
+              <div class="or-grid-header-cell">15:00</div>
             </div>
             <div id="or-grid-body"></div>
           </div></div>
+        </div>
+        <!-- 急診插刀統計 -->
+        <div class="card" id="emergency-stats-card">
+          <div class="card-title">🚨 急診插刀記錄（本月）</div>
+          <div id="emergency-stats-body"></div>
         </div>
       </div>
 
@@ -323,6 +344,14 @@
         <div class="card" style="max-width:680px">
           <div class="card-title">新增手術排程</div>
           <div id="add-banners"></div>
+          <!-- 急診插刀開關 -->
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);margin-bottom:14px">
+            <label class="toggle"><input type="checkbox" id="f-emergency" onchange="toggleEmergencyMode()"><span class="toggle-slider" style="background:var(--gray-border)"></span></label>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--orange)">🚨 急診插刀模式</div>
+              <div style="font-size:11px;color:var(--text-3)">開啟後可插入已排程時段，系統自動記錄被擋刀資訊</div>
+            </div>
+          </div>
           <div class="form-grid">
             <div class="form-group"><label>手術日期 *</label><input type="date" id="f-date" onchange="checkConflict()"></div>
             <div class="form-group"><label>刀房 *</label><select id="f-or" onchange="checkConflict()"></select></div>
@@ -330,8 +359,8 @@
           <div class="form-grid">
             <div class="form-group"><label>時段 *</label>
               <select id="f-session" onchange="checkConflict()">
-                <option value="08:00">08:00 上午</option><option value="10:00">10:00 上午</option>
-                <option value="13:00">13:00 下午</option><option value="15:00">15:00 下午</option>
+                <option value="08:00">08:00</option><option value="10:00">10:00</option>
+                <option value="13:00">13:00</option><option value="15:00">15:00</option>
               </select>
             </div>
             <div class="form-group"><label>預估時間 *</label>
@@ -343,27 +372,23 @@
           </div>
           <div class="form-grid">
             <div class="form-group"><label>主刀醫師 *</label><select id="f-doctor"></select></div>
-            <div class="form-group"><label>術式類別 *</label>
-              <select id="f-category">
-                <option>一般外科</option><option>骨科</option><option>心臟外科</option>
-                <option>神經外科</option><option>婦產科</option><option>泌尿科</option>
-                <option>眼科</option><option>耳鼻喉科</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-grid full"><div class="form-group"><label>術式名稱 *</label><input type="text" id="f-opname" placeholder="例：腹腔鏡膽囊切除術"></div></div>
-          <div class="form-grid">
             <div class="form-group"><label>病歷號</label><input type="text" id="f-chartno" placeholder="輸入病歷號"></div>
-            <div class="form-group"><label>麻醉方式</label>
-              <select id="f-anesthesia">
-                <option>全身麻醉</option><option>脊椎麻醉</option><option>局部麻醉</option><option>靜脈麻醉</option>
-              </select>
+          </div>
+          <div class="form-grid full">
+            <div class="form-group">
+              <label>術式名稱 * <span style="font-size:11px;color:var(--text-3);font-weight:400">（可選擇或直接輸入）</span></label>
+              <div class="combo-wrap">
+                <input type="text" id="f-opname" list="opname-list" placeholder="選擇或輸入術式名稱" autocomplete="off">
+                <datalist id="opname-list"></datalist>
+              </div>
             </div>
           </div>
-          <div class="form-grid full"><div class="form-group"><label>備註</label><textarea id="f-note" placeholder="特殊器械需求、術前注意事項…"></textarea></div></div>
+          <div class="form-grid full">
+            <div class="form-group"><label>備註</label><textarea id="f-note" placeholder="特殊器械需求、術前注意事項…"></textarea></div>
+          </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-secondary" onclick="resetForm()">清除</button>
-            <button class="btn btn-primary" onclick="submitSchedule()">送出排程</button>
+            <button class="btn btn-primary" id="submit-btn" onclick="submitSchedule()">送出排程</button>
           </div>
         </div>
       </div>
@@ -390,15 +415,22 @@
         <div class="stat-grid" id="stat-grid-2"></div>
         <div class="card"><div class="card-title">各醫師手術量（本月）</div><div class="bar-wrap" id="doctor-bars"></div></div>
         <div class="card"><div class="card-title">各刀房使用狀況（本月）</div><div class="bar-wrap" id="or-bars"></div></div>
+        <div class="card">
+          <div class="card-title">🚨 急診插刀統計（被擋刀次數）</div>
+          <div class="bar-wrap" id="blocked-bars"></div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:12px" id="blocked-detail"></div>
+        </div>
       </div>
 
       <!-- 刀房管理 -->
       <div class="page" id="page-admin">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-size:16px;font-weight:700">刀房管理</span>
-          <span class="badge badge-purple">僅限管理員</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px;font-weight:700">刀房管理</span>
+            <span class="badge badge-purple">僅限管理員</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showAddORModal()">＋ 新增刀房</button>
         </div>
-        <p style="font-size:13px;color:var(--text-3);margin-bottom:16px">點擊名稱可修改。綠色=上午本科時段，藍色=下午本科時段。</p>
         <div style="display:flex;gap:8px;margin-bottom:14px">
           <div class="badge badge-green" style="font-size:12px;padding:4px 10px">■ 上午時段</div>
           <div class="badge badge-blue" style="font-size:12px;padding:4px 10px">■ 下午時段</div>
@@ -412,7 +444,6 @@
       <div class="page" id="page-setup">
         <div class="card" style="max-width:600px">
           <div class="card-title">串接 Google Sheets</div>
-          <p style="font-size:13px;color:var(--text-2);margin-bottom:16px">完成以下步驟，資料就會儲存在 Google Sheets。</p>
           <div class="setup-step">
             <div class="step-num">1</div>
             <div class="step-body">
@@ -448,78 +479,146 @@
 
 <div id="toast"></div>
 
+<!-- 新增刀房 Modal -->
+<div class="modal-overlay" id="add-or-modal">
+  <div class="modal">
+    <div class="modal-title">新增刀房</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>刀房名稱</label>
+      <input type="text" id="new-or-name" placeholder="例：刀房 5、心臟刀房" maxlength="20">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('add-or-modal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddOR()">新增</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ══ 設定區 ══
+// ══ 術式清單 ══
+var OP_LIST = [
+  'Open heart for ASD','Open heart for VSD','Open heart for T/F',
+  'Open heart for CABG 1','Open heart for CABG 2','Open heart for CABG 3',
+  'Anastomosis of blood vessel','Surgical obliteration for PDA','Surgery for COA',
+  'Mitral valve replacement','Aortic valve replacement','Double valve replacement',
+  'Triple valves replacement','Tricuspid valve repair','Tricuspid valver replacement',
+  'Pace-maker implantation','Ventricular aneurysm','Thoracic aortic aneurysm',
+  'Abdominal aortic aneurysm','Excision of A-V fistula','A-V fistula',
+  'Embolectomy','Thromboendarterectomy',
+  'patchangioplasty or bypass graft for ASO',
+  'Ligatino of esophageal varices transthoracic or transabdominal',
+  'High ligation,stripping & local excision for varicose vein,one leg',
+  'Bil. High ligation, stripping & local excision for varicose veins',
+  'Devascularization for esophageal varices','Vascular repair',
+  'A-V shunt for hemodialysis','TGA','TAPVR','Endocardial curhion defect',
+  'Open heart for Internal mammary arterycoronary bypass (1) One vessel',
+  'Open heart for Internal mammary arterycoronary bypass (1) Two vessels',
+  'Pericardiectomy','Pericardiotomy with exploration',
+  'Exploratory cardiotomy includes removal of foreign body',
+  'Valvuloplasty for AV or MV, TV','Repair fistula sinus of valsalva',
+  'Closed mitral or open mitral commissurotomy','Exploration vascular',
+  'Pulmonary ortary banding','Repair aorto-pulmonary window',
+  'Excision of canotid tumor or aneurysm','pulmonary valve commissurotomy',
+  'PTA(ANGIOPLASTY)','Arteriography of extremity','Antegrade venography',
+  'Stenting for Iliac vessel',
+  'Transcatheter Aortic Valve Implantation(TAVI)',
+  'Common carotid artery, one side','Common carotid artery, both side',
+  'Stenting for head &neck vessel (one vessel)',
+  'Percutaneous transluminal deployment of veinous device',
+  'Percutaneous transluminal catheter retrieval of vasculer/foreign',
+  'Surgery for A type aortic dissection','Intra-operative echo',
+  'Therapeuticcatheterimplantation-Hickmancatherimplantation',
+  'T.A.E(trans-arterial embolization)',
+  'Coronary artery bypass grafting(CABG)-4 vessels',
+  'Coronary artery bypass grafting(CABG)-5 vessels',
+  'Coronary artery bypass grafting(CABG)-6 vessels',
+  'Removal of Cardiac Lead from Heart, Percutaneous Approach',
+  'Fontan operation','Hybrid multiple axial intra operative (<6hr)',
+  'Open Femoro-femoral bypass, Femoro-popliteal bypass, Axillo-femoral',
+  'Open femoro-infraknee distal bypass, one vessel',
+  'Open femoro-infraknee distal bypass, two vessels',
+  'Therapeutic catheter implantation — PICC (手術費健保給付)',
+  'Xi Robotic Valvular and/or annuloplasty (手術費健保給付)',
+  'Xi Robotic Single valve replacement (手術費健保給付)',
+  'Xi Robotic Repair, atrial septal defect, secundum (手術費健保給付)',
+  'Xi Robotic Arrhythmia surgery via atriotomy (純手術費)',
+  'Xi da Vinci simple cardiac surgery (純手術費)',
+  'Xi da Vinci moderate cardiac surgery (純手術費)',
+  'Xi da Vinci complex cardiac surgery (手術費健保給付)',
+  'SP Robotic Valvular and/or annuloplasty (手術費健保給付)',
+  'SP Robotic Single valve replacement (手術費健保給付)',
+  'SP Robotic Repair, atrial septal defect, secundum (手術費健保給付)',
+  'SP Robotic Arrhythmia surgery via atriotomy (純手術費)',
+  'SP da Vinci simple cardiac surgery (純手術費)',
+  'SP da Vinci moderate cardiac surgery (純手術費)',
+  'SP da Vinci complex cardiac surgery',
+  'Transcatheter Edge-to-Edge Mitral valve repair',
+  'Vascular repair A-V shunt'
+];
+
 var SHEETS_URL = localStorage.getItem('sheetsUrl') || '';
 
-// ══ 預設資料（Demo 模式）══
+// ══ 預設資料（Demo - 清空醫師）══
 var DEFAULT_USERS = [
-  {code:'admin', name:'管理員', pw:hashPw('admin123'), role:'admin', createdAt:'2025-05-25'},
-  {code:'D001',  name:'王大明', pw:hashPw('pass1234'), role:'doctor', createdAt:'2025-05-25'},
-  {code:'D002',  name:'李志明', pw:hashPw('pass1234'), role:'doctor', createdAt:'2025-05-25'},
-  {code:'D003',  name:'陳美玲', pw:hashPw('pass1234'), role:'doctor', createdAt:'2025-05-25'},
-  {code:'D004',  name:'張建國', pw:hashPw('pass1234'), role:'doctor', createdAt:'2025-05-25'}
+  {code:'admin', name:'管理員', pw:hashPw('admin123'), role:'admin', createdAt:'2025-05-25'}
 ];
 var DEFAULT_ORS = [
   {id:1,name:'刀房 1',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,0],3:[1,1],4:[1,0],5:[1,1],6:[0,0],0:[0,0]}},
-  {id:2,name:'骨科刀房',open:true,reason:'',until:'',sched:{1:[0,1],2:[0,1],3:[0,1],4:[0,1],5:[0,1],6:[0,0],0:[0,0]}},
-  {id:3,name:'心臟外科刀房',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[0,0],4:[1,1],5:[1,0],6:[0,0],0:[0,0]}},
-  {id:4,name:'刀房 4',open:false,reason:'設備維修',until:'2025-05-28',sched:{1:[1,0],2:[1,0],3:[1,0],4:[1,0],5:[1,0],6:[0,0],0:[0,0]}}
+  {id:2,name:'刀房 2',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[1,1],4:[1,1],5:[1,1],6:[0,0],0:[0,0]}},
+  {id:3,name:'刀房 3',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[0,0],4:[1,1],5:[1,0],6:[0,0],0:[0,0]}}
 ];
-var DEFAULT_SCHEDULES = [
-  {id:'s001',date:'2025-05-25',or:1,session:'08:00',duration:2,doctor:'D001',category:'一般外科',opname:'膽囊切除術',chartno:'A12345',anesthesia:'全身麻醉',note:'',status:'完成',created:'2025-05-24 09:00',createdBy:'D001'},
-  {id:'s002',date:'2025-05-25',or:1,session:'10:00',duration:2,doctor:'D002',category:'一般外科',opname:'腹腔鏡闌尾切除',chartno:'A12346',anesthesia:'全身麻醉',note:'',status:'進行中',created:'2025-05-24 09:10',createdBy:'D002'},
-  {id:'s003',date:'2025-05-25',or:2,session:'08:00',duration:3,doctor:'D003',category:'骨科',opname:'髖關節置換術',chartno:'B22201',anesthesia:'脊椎麻醉',note:'',status:'完成',created:'2025-05-24 10:00',createdBy:'D003'},
-  {id:'s004',date:'2025-05-25',or:3,session:'10:00',duration:4,doctor:'D004',category:'心臟外科',opname:'心臟冠狀動脈繞道',chartno:'C33301',anesthesia:'全身麻醉',note:'備三袋血',status:'進行中',created:'2025-05-24 11:00',createdBy:'D004'}
-];
-var DEFAULT_LOGS = [
-  {time:'今天 09:12',actor:'管理員',msg:'停用刀房 4（設備維修，至 05/28）',type:'is-close'}
-];
+var DEFAULT_SCHEDULES = [];
+var DEFAULT_LOGS = [];
+var DEFAULT_EMERGENCY_LOG = []; // {date, orName, session, blockedDoctor, blockedOpname, emergencyDoctor, emergencyOpname}
 
 function loadData(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function saveData(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
-var users     = loadData('users_v2', DEFAULT_USERS);
-var ors       = loadData('ors', DEFAULT_ORS);
-var schedules = loadData('schedules', DEFAULT_SCHEDULES);
-var logs      = loadData('logs', DEFAULT_LOGS);
-var currentUser = null;
+var users         = loadData('users_v2', DEFAULT_USERS);
+var ors           = loadData('ors_v2', DEFAULT_ORS);
+var schedules     = loadData('schedules_v2', DEFAULT_SCHEDULES);
+var logs          = loadData('logs_v2', DEFAULT_LOGS);
+var emergencyLogs = loadData('emergency_logs', DEFAULT_EMERGENCY_LOG);
+var currentUser   = null;
+var pendingEmergency = null;
+var pendingDelete    = null;
 
-// ══ 簡易雜湊（Demo 用，非加密用途）══
-function hashPw(pw){
-  var h=0,i,c;
-  for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}
-  return 'h'+Math.abs(h).toString(36);
+function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
+function pad(n){return String(n).padStart(2,'0');}
+function toDateStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function genId(){return 's'+Date.now();}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
+function addLog(msg,type){var now=new Date();logs.unshift({time:'今天 '+pad(now.getHours())+':'+pad(now.getMinutes()),actor:currentUser?currentUser.name:'system',msg:msg,type:type||''});saveData('logs_v2',logs);renderLogs();}
+function getOR(id){return ors.find(function(o){return o.id===id;});}
+function getUser(code){return users.find(function(u){return u.code===code;});}
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ══ 術式 datalist ══
+function populateOpList(){
+  var dl=document.getElementById('opname-list');
+  dl.innerHTML=OP_LIST.map(function(op){return '<option value="'+op.replace(/"/g,'&quot;')+'">'+op+'</option>';}).join('');
 }
 
-// ══ 切換登入/註冊 tab ══
-function switchAuthTab(tab, btn){
+// ══ Auth ══
+function switchAuthTab(tab,btn){
   document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.auth-panel').forEach(function(p){p.classList.remove('active');});
   btn.classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
   document.getElementById('login-error').style.display='none';
   document.getElementById('reg-error').style.display='none';
-  document.getElementById('reg-success').style.display='none';
 }
-
-function togglePw(id, btn){
-  var inp=document.getElementById(id);
-  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
-  else{inp.type='password';btn.textContent='👁';}
-}
-
+function togglePw(id,btn){var i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.textContent='🙈';}else{i.type='password';btn.textContent='👁';}}
 function checkPwStrength(){
   var pw=document.getElementById('reg-pw').value;
-  var bar=document.getElementById('pw-strength-bar');
-  var txt=document.getElementById('pw-strength-text');
+  var bar=document.getElementById('pw-strength-bar'),txt=document.getElementById('pw-strength-text');
   if(!pw){bar.style.display='none';txt.textContent='';return;}
   bar.style.display='block';
   if(pw.length<6){bar.className='pw-strength strength-weak';txt.textContent='密碼太短';txt.style.color='var(--red)';}
   else if(pw.length<10){bar.className='pw-strength strength-medium';txt.textContent='密碼強度：中';txt.style.color='var(--amber)';}
   else{bar.className='pw-strength strength-strong';txt.textContent='密碼強度：強';txt.style.color='var(--green)';}
 }
-
 function checkCodeAvailable(){
   var code=document.getElementById('reg-code').value.trim();
   var hint=document.getElementById('code-hint');
@@ -528,65 +627,38 @@ function checkCodeAvailable(){
   if(exists){hint.textContent='⚠ 此代號已被使用';hint.style.color='var(--red)';}
   else{hint.textContent='✓ 代號可使用';hint.style.color='var(--green)';}
 }
-
-// ══ 登入 ══
 function doLogin(){
   var code=document.getElementById('login-code').value.trim();
   var pw=document.getElementById('login-pw').value;
-  var err=document.getElementById('login-error');
-  err.style.display='none';
-  if(!code||!pw){showAuthError('login','請填寫代號與密碼');return;}
+  var err=document.getElementById('login-error');err.style.display='none';
+  if(!code||!pw){err.textContent='請填寫代號與密碼';err.style.display='block';return;}
   var u=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-  if(!u||u.pw!==hashPw(pw)){showAuthError('login','代號或密碼不正確');return;}
+  if(!u||u.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
   currentUser=u;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
   initUI();
 }
-
-// ══ 註冊 ══
 function doRegister(){
   var code=document.getElementById('reg-code').value.trim();
   var name=document.getElementById('reg-name').value.trim();
   var pw=document.getElementById('reg-pw').value;
   var pw2=document.getElementById('reg-pw2').value;
-  document.getElementById('reg-error').style.display='none';
-  document.getElementById('reg-success').style.display='none';
-
-  if(!code||!name||!pw||!pw2){showAuthError('reg','請填寫所有欄位');return;}
-  if(pw.length<6){showAuthError('reg','密碼至少需要 6 個字元');return;}
-  if(pw!==pw2){showAuthError('reg','兩次密碼不一致');return;}
-  if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){showAuthError('reg','此代號已被使用，請換一個');return;}
-
+  var err=document.getElementById('reg-error');err.style.display='none';
+  if(!code||!name||!pw||!pw2){err.textContent='請填寫所有欄位';err.style.display='block';return;}
+  if(pw.length<6){err.textContent='密碼至少需要 6 個字元';err.style.display='block';return;}
+  if(pw!==pw2){err.textContent='兩次密碼不一致';err.style.display='block';return;}
+  if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
   var now=new Date();
-  var newUser={code:code, name:name, pw:hashPw(pw), role:'doctor',
-    createdAt:now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())};
-  users.push(newUser);
-  saveData('users_v2', users);
-
-  // 回傳至 Google Sheets（如果已串接）
-  sendUserToSheets(newUser);
-
-  // 直接登入
-  currentUser=newUser;
+  var nu={code:code,name:name,pw:hashPw(pw),role:'doctor',createdAt:toDateStr(now)};
+  users.push(nu);saveData('users_v2',users);
+  if(SHEETS_URL)fetch(SHEETS_URL+'?action=addUser&code='+encodeURIComponent(code)+'&name='+encodeURIComponent(name)+'&pw='+encodeURIComponent(nu.pw)+'&role=doctor&createdAt='+encodeURIComponent(toDateStr(now))).catch(function(){});
+  currentUser=nu;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
   showToast('✓ 註冊成功，歡迎 '+name+'！');
   initUI();
 }
-
-function sendUserToSheets(u){
-  if(!SHEETS_URL) return;
-  var params='action=addUser&code='+encodeURIComponent(u.code)+'&name='+encodeURIComponent(u.name)+'&pw='+encodeURIComponent(u.pw)+'&role='+encodeURIComponent(u.role)+'&createdAt='+encodeURIComponent(u.createdAt);
-  fetch(SHEETS_URL+'?'+params).catch(function(){});
-}
-
-function showAuthError(panel, msg){
-  var el=document.getElementById(panel+'-error');
-  el.textContent=msg; el.style.display='block';
-}
-
-// ══ 登出 ══
 function doLogout(){
   currentUser=null;
   document.getElementById('login-code').value='';
@@ -596,14 +668,13 @@ function doLogout(){
   document.getElementById('main-app').style.display='none';
 }
 
-// ══ 初始化 ══
+// ══ Init ══
 function initUI(){
   var isAdmin=currentUser.role==='admin';
   document.getElementById('admin-nav-item').style.display=isAdmin?'block':'none';
   document.getElementById('setup-nav-item').style.display=isAdmin?'block':'none';
   var av=document.getElementById('sidebar-avatar');
-  av.textContent=currentUser.name[0];
-  av.className='user-avatar '+(isAdmin?'avatar-admin':'avatar-dr');
+  av.textContent=currentUser.name[0];av.className='user-avatar '+(isAdmin?'avatar-admin':'avatar-dr');
   document.getElementById('sidebar-name').textContent=currentUser.name;
   document.getElementById('sidebar-role-text').textContent=(isAdmin?'管理員':'醫師')+' ('+currentUser.code+')';
   var now=new Date();
@@ -611,53 +682,76 @@ function initUI(){
   document.getElementById('sidebar-date').textContent=ds;
   document.getElementById('topbar-date').textContent=ds;
   document.getElementById('dashboard-date').value=toDateStr(now);
-  populateDoctorSelect(); populateORSelect();
-  renderDashboard(); renderStats(); renderList();
+  populateOpList();populateDoctorSelect();populateORSelect();
+  renderDashboard();renderStats();renderList();
   if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('sheets-connected').style.display='block';}
   showPage('dashboard',document.querySelector('.nav-item'));
 }
-
-// ══ 工具 ══
-function pad(n){return String(n).padStart(2,'0');}
-function toDateStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-function genId(){return 's'+Date.now();}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
-function addLog(msg,type){var now=new Date();logs.unshift({time:'今天 '+pad(now.getHours())+':'+pad(now.getMinutes()),actor:currentUser.name,msg:msg,type:type||''});saveData('logs',logs);renderLogs();}
-function getOR(id){return ors.find(function(o){return o.id===id;});}
-function getUser(code){return users.find(function(u){return u.code===code;});}
 
 // ══ 今日刀表 ══
 function renderDashboard(){
   var dateVal=document.getElementById('dashboard-date').value;
   var sessions=['08:00','10:00','13:00','15:00'];
-  var body=document.getElementById('or-grid-body'); body.innerHTML='';
+  var body=document.getElementById('or-grid-body');body.innerHTML='';
   var ts=schedules.filter(function(s){return s.date===dateVal;});
   ors.forEach(function(or){
-    var row=document.createElement('div'); row.className='or-grid-row';
+    var row=document.createElement('div');row.className='or-grid-row';
     var lbl='<div class="or-grid-label"><span class="or-dot '+(or.open?'dot-open':'dot-closed')+'"></span>'+or.name+'</div>';
     if(!or.open){row.innerHTML=lbl+'<div class="slot slot-closed" style="grid-column:span 4">🔒 停用中'+(or.reason?' — '+or.reason:'')+(or.until?' 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'')+'</div>';body.appendChild(row);return;}
     var cells=lbl;
     sessions.forEach(function(sess){
       var m=ts.filter(function(s){return s.or===or.id&&s.session===sess;});
       if(!m.length){cells+='<div class="slot slot-empty">空</div>';}
-      else if(m.length>1){cells+='<div class="slot slot-conflict"><div class="slot-name">⚠ 衝突</div><div class="slot-sub">'+m.length+' 筆重疊</div></div>';}
-      else{var s=m[0];var dr=getUser(s.doctor);var cl=s.status==='完成'?'slot-done':s.status==='進行中'?'slot-ongoing':'slot-pending';cells+='<div class="slot '+cl+'"><div class="slot-name">'+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+' · '+s.status+'</div></div>';}
+      else if(m.length>1){
+        var em=m.filter(function(s){return s.emergency;});
+        cells+='<div class="slot slot-conflict"><div class="slot-name">⚠ '+(em.length?'急診插刀':'衝突')+'</div><div class="slot-sub">'+m.length+' 筆</div></div>';
+      }else{
+        var s=m[0];var dr=getUser(s.doctor);
+        var cl=s.emergency?'slot-emergency':'slot-normal';
+        cells+='<div class="slot '+cl+'"><div class="slot-name">'+(s.emergency?'🚨 ':'')+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+'</div></div>';
+      }
     });
-    row.innerHTML=cells; body.appendChild(row);
+    row.innerHTML=cells;body.appendChild(row);
   });
-  var done=ts.filter(function(s){return s.status==='完成';}).length;
-  var ongoing=ts.filter(function(s){return s.status==='進行中';}).length;
+  // 統計
+  var em=ts.filter(function(s){return s.emergency;}).length;
   var cc=ors.filter(function(o){return !o.open;}).length;
   document.getElementById('stat-grid').innerHTML=
     sc('今日手術','color:var(--text)',ts.length,ors.filter(function(o){return o.open;}).length+' 間刀房開放')+
-    sc('已完成','color:var(--green)',done,Math.round(done/(ts.length||1)*100)+'%')+
-    sc('進行中','color:var(--amber)',ongoing,'刀房中')+
-    sc('停用刀房','color:var(--red)',cc,cc?ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無');
+    sc('急診插刀','color:var(--orange)',em,'今日')+
+    sc('停用刀房','color:var(--red)',cc,cc?ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無')+
+    sc('本月手術','color:var(--green)',schedules.filter(function(s){var d=new Date(s.date),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length,'台');
+  // 急診統計
+  renderEmergencyStats();
 }
 function sc(l,s,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="'+s+'">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
 
+function renderEmergencyStats(){
+  var now=new Date();
+  var mo=emergencyLogs.filter(function(e){var d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var body=document.getElementById('emergency-stats-body');
+  if(!mo.length){body.innerHTML='<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無急診插刀記錄</div>';return;}
+  var html='<div class="list-header"><span class="col">日期</span><span class="col">刀房/時段</span><span class="col">急診醫師</span><span class="col-wide">急診術式</span><span class="col">被擋醫師</span><span class="col-wide">被擋術式</span></div>';
+  mo.slice(0,10).forEach(function(e){
+    html+='<div class="list-row">'
+      +'<div class="col">'+e.date.replace(/\d{4}-/,'').replace('-','/')+'</div>'
+      +'<div class="col">'+e.orName+' '+e.session+'</div>'
+      +'<div class="col" style="color:var(--orange);font-weight:500">'+e.emergencyDoctor+'</div>'
+      +'<div class="col-wide" style="color:var(--orange)">🚨 '+e.emergencyOpname+'</div>'
+      +'<div class="col" style="color:var(--red)">'+e.blockedDoctor+'</div>'
+      +'<div class="col-wide">'+e.blockedOpname+'</div>'
+      +'</div>';
+  });
+  body.innerHTML=html;
+}
+
 // ══ 新增排程 ══
-function populateORSelect(){var sel=document.getElementById('f-or');sel.innerHTML='';ors.forEach(function(or){var o=document.createElement('option');o.value=or.id;o.textContent=or.name+(or.open?'':'（停用中）');o.disabled=!or.open;sel.appendChild(o);});}
+function populateORSelect(){
+  var sel=document.getElementById('f-or');sel.innerHTML='';
+  ors.forEach(function(or){
+    var o=document.createElement('option');o.value=or.id;o.textContent=or.name+(or.open?'':'（停用中）');o.disabled=!or.open;sel.appendChild(o);
+  });
+}
 function populateDoctorSelect(){
   var sel=document.getElementById('f-doctor');var filt=document.getElementById('filter-doctor');
   sel.innerHTML='';filt.innerHTML='<option value="">全部醫師</option>';
@@ -668,35 +762,108 @@ function populateDoctorSelect(){
     var o2=o.cloneNode(true);o2.selected=false;filt.appendChild(o2);
   });
 }
+function toggleEmergencyMode(){
+  var isEm=document.getElementById('f-emergency').checked;
+  var btn=document.getElementById('submit-btn');
+  btn.className='btn '+(isEm?'btn-orange':'btn-primary');
+  btn.textContent=isEm?'🚨 確認急診插刀':'送出排程';
+  checkConflict();
+}
 function checkConflict(){
   var d=document.getElementById('f-date').value,orId=parseInt(document.getElementById('f-or').value),sess=document.getElementById('f-session').value;
+  var isEm=document.getElementById('f-emergency').checked;
   var b=document.getElementById('add-banners');b.innerHTML='';
   if(!d||!orId)return;
   var or=getOR(orId);
   if(or&&!or.open){b.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中，無法排程。</div>';return;}
   var c=schedules.find(function(s){return s.date===d&&s.or===orId&&s.session===sess;});
-  if(c){var dr=getUser(c.doctor);b.innerHTML='<div class="banner banner-warn">⚠️ 此時段已有排程：'+c.opname+'（'+(dr?dr.name:'?')+'），請確認。</div>';}
+  if(c){
+    var dr=getUser(c.doctor);
+    if(isEm){b.innerHTML='<div class="banner banner-orange">🚨 急診模式：此時段有排程（'+(dr?dr.name:'?')+' — '+c.opname+'），插刀後將記錄被擋資訊。</div>';}
+    else{b.innerHTML='<div class="banner banner-warn">⚠️ 此時段已有排程：'+c.opname+'（'+(dr?dr.name:'?')+'），請確認是否衝突。</div>';}
+  }
 }
-function resetForm(){['f-date','f-chartno','f-opname','f-note'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('add-banners').innerHTML='';}
+function resetForm(){
+  ['f-date','f-chartno','f-opname','f-note'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-emergency').checked=false;
+  document.getElementById('add-banners').innerHTML='';
+  toggleEmergencyMode();
+}
+
 function submitSchedule(){
   var date=document.getElementById('f-date').value,orId=parseInt(document.getElementById('f-or').value);
   var sess=document.getElementById('f-session').value,dur=parseInt(document.getElementById('f-duration').value);
-  var doctor=document.getElementById('f-doctor').value,cat=document.getElementById('f-category').value;
+  var doctor=document.getElementById('f-doctor').value;
   var opname=document.getElementById('f-opname').value.trim();
+  var isEm=document.getElementById('f-emergency').checked;
   if(!date||!orId||!opname){showToast('請填寫必要欄位');return;}
   var or=getOR(orId);if(or&&!or.open){showToast('此刀房目前停用中');return;}
-  var now=new Date();
-  var rec={id:genId(),date:date,or:orId,session:sess,duration:dur,doctor:doctor,category:cat,
-    opname:opname,chartno:document.getElementById('f-chartno').value.trim(),
-    anesthesia:document.getElementById('f-anesthesia').value,
-    note:document.getElementById('f-note').value.trim(),status:'待手術',
-    created:toDateStr(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),createdBy:currentUser.code};
-  schedules.push(rec);saveData('schedules',schedules);
-  addLog('新增排程：'+opname+'（'+date+'，'+or.name+' '+sess+'）','');
-  showToast('✓ 排程已新增');resetForm();renderDashboard();renderList();renderStats();
+  // 衝突檢查
+  var conflict=schedules.find(function(s){return s.date===date&&s.or===orId&&s.session===sess;});
+  if(conflict&&!isEm){showToast('此時段已有排程，請開啟急診模式或選其他時段');return;}
+  if(conflict&&isEm){
+    var cdr=getUser(conflict.doctor);
+    document.getElementById('emergency-conflict-info').innerHTML='<b>被擋醫師：</b>'+(cdr?cdr.name:'?')+' — '+conflict.opname;
+    pendingEmergency={date:date,orId:orId,sess:sess,dur:dur,doctor:doctor,opname:opname,or:or,conflict:conflict,cdr:cdr};
+    openModal('emergency-modal');return;
+  }
+  doAddSchedule({date:date,orId:orId,sess:sess,dur:dur,doctor:doctor,opname:opname,or:or,isEm:false});
 }
 
-// ══ 列表 ══
+function confirmEmergency(){
+  if(!pendingEmergency)return;
+  var p=pendingEmergency;
+  // 記錄被擋資訊
+  emergencyLogs.push({
+    date:p.date,orName:p.or.name,session:p.sess,
+    emergencyDoctor:getUser(p.doctor)?getUser(p.doctor).name:p.doctor,
+    emergencyOpname:p.opname,
+    blockedDoctor:p.cdr?p.cdr.name:p.conflict.doctor,
+    blockedOpname:p.conflict.opname
+  });
+  saveData('emergency_logs',emergencyLogs);
+  doAddSchedule({date:p.date,orId:p.orId,sess:p.sess,dur:p.dur,doctor:p.doctor,opname:p.opname,or:p.or,isEm:true});
+  closeModal('emergency-modal');
+  pendingEmergency=null;
+}
+
+function doAddSchedule(p){
+  var now=new Date();
+  var rec={id:genId(),date:p.date,or:p.orId,session:p.sess,duration:p.dur,
+    doctor:p.doctor,opname:p.opname,
+    chartno:document.getElementById('f-chartno').value.trim(),
+    anesthesia:'',note:document.getElementById('f-note').value.trim(),
+    emergency:p.isEm,
+    created:toDateStr(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
+    createdBy:currentUser.code};
+  schedules.push(rec);saveData('schedules_v2',schedules);
+  addLog((p.isEm?'🚨 急診插刀：':'新增排程：')+p.opname+'（'+p.date+'，'+p.or.name+' '+p.sess+'）',(p.isEm?'is-emergency':''));
+  showToast(p.isEm?'🚨 急診插刀已記錄':'✓ 排程已新增');
+  resetForm();renderDashboard();renderList();renderStats();
+}
+
+// ══ 刪除排程 ══
+function askDelete(id){
+  var s=schedules.find(function(x){return x.id===id;});
+  if(!s)return;
+  var isAdmin=currentUser.role==='admin';
+  var isOwner=s.createdBy===currentUser.code;
+  if(!isAdmin&&!isOwner){showToast('只有管理員或本人可以刪除');return;}
+  pendingDelete=id;
+  document.getElementById('delete-modal-msg').textContent='確定要刪除「'+s.opname+'」（'+s.date+' '+s.session+'）？';
+  openModal('delete-modal');
+}
+function confirmDelete(){
+  if(!pendingDelete)return;
+  schedules=schedules.filter(function(s){return s.id!==pendingDelete;});
+  saveData('schedules_v2',schedules);
+  addLog('刪除排程 ID：'+pendingDelete,'is-close');
+  showToast('✓ 已刪除');
+  closeModal('delete-modal');pendingDelete=null;
+  renderDashboard();renderList();renderStats();
+}
+
+// ══ 排程列表 ══
 function renderList(){
   var df=document.getElementById('filter-doctor').value,p=document.getElementById('filter-period').value;
   var now=new Date();
@@ -708,12 +875,20 @@ function renderList(){
     if(p==='year')return d.getFullYear()===now.getFullYear();
     return true;
   }).sort(function(a,b){return a.date>b.date?1:a.date<b.date?-1:0;});
-  var html='<div class="list-header"><span class="col-wide">術式</span><span class="col">醫師</span><span class="col">日期</span><span class="col">刀房</span><span class="col-sm">狀態</span></div>';
+  var isAdmin=currentUser.role==='admin';
+  var html='<div class="list-header"><span class="col-wide">術式</span><span class="col">醫師</span><span class="col">日期</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:32px"></span></div>';
   if(!f.length)html+='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';
   else f.forEach(function(s){
     var dr=getUser(s.doctor),or=getOR(s.or);
-    var bc=s.status==='完成'?'badge-green':s.status==='進行中'?'badge-amber':'badge-blue';
-    html+='<div class="list-row"><div class="col-wide" style="font-weight:500">'+s.opname+'</div><div class="col">'+(dr?dr.name+' ('+dr.code+')':'?')+'</div><div class="col">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+'</div><div class="col">'+(or?or.name:'?')+'</div><div class="col-sm"><span class="badge '+bc+'">'+s.status+'</span></div></div>';
+    var canDel=isAdmin||(s.createdBy===currentUser.code);
+    html+='<div class="list-row">'
+      +'<div class="col-wide" style="font-weight:500">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+      +'<div class="col">'+(dr?dr.name:'?')+'</div>'
+      +'<div class="col">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+'</div>'
+      +'<div class="col">'+(or?or.name:'?')+'</div>'
+      +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
+      +'<div style="width:32px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:12px" onclick="askDelete(\''+s.id+'\')">✕</button>':'')+'</div>'
+      +'</div>';
   });
   document.getElementById('list-body').innerHTML=html;
 }
@@ -729,12 +904,12 @@ function exportCSV(){
     if(p==='year')return d.getFullYear()===now.getFullYear();
     return true;
   });
-  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式類別','術式名稱','病歷號','麻醉方式','預估時間(hr)','狀態','備註']];
-  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([s.date,s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.category,s.opname,s.chartno,s.anesthesia,s.duration,s.status,s.note]);});
-  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病歷號','預估時間(hr)','類型','備註']];
+  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([s.date,s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.chartno,s.duration,s.emergency?'急診':'一般',s.note]);});
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='手術排程_'+toDateStr(now)+'.csv';a.click();URL.revokeObjectURL(url);
-  showToast('✓ CSV 已下載（可用 Excel 開啟）');
+  showToast('✓ CSV 已下載');
 }
 
 // ══ 統計 ══
@@ -742,31 +917,97 @@ function renderStats(){
   var now=new Date();
   var mo=schedules.filter(function(s){var d=new Date(s.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var yr=schedules.filter(function(s){return new Date(s.date).getFullYear()===now.getFullYear();});
+  var moEm=mo.filter(function(s){return s.emergency;});
   document.getElementById('stat-grid-2').innerHTML=
     sc('本月手術總數','color:var(--text)',mo.length,'目標 80 台')+
     sc('本年累計','color:var(--blue)',yr.length,'目標 800 台')+
-    sc('刀房使用率','color:var(--green)',Math.round(mo.length/(ors.filter(function(o){return o.open;}).length*20)*100)+'%','以每刀房 20 台計')+
+    sc('本月急診插刀','color:var(--orange)',moEm.length,'台')+
     sc('醫師人數','color:var(--purple)',users.filter(function(u){return u.role==='doctor';}).length,'位醫師');
+
   var drs=users.filter(function(u){return u.role==='doctor';});
   var mx=Math.max.apply(null,drs.map(function(d){return mo.filter(function(s){return s.doctor===d.code;}).length;}).concat([0]));
-  document.getElementById('doctor-bars').innerHTML=drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+dr.name+' ('+dr.code+')</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mx?Math.round(c/mx*100):0)+'%"></div></div></div>';}).join('');
+  document.getElementById('doctor-bars').innerHTML=drs.map(function(dr){
+    var c=mo.filter(function(s){return s.doctor===dr.code;}).length;
+    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+dr.name+'</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mx?Math.round(c/mx*100):0)+'%"></div></div></div>';
+  }).join('');
+
   var openOrs=ors.filter(function(o){return o.open;});
   var mo2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return s.or===o.id;}).length;}).concat([0]));
-  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return s.or===or.id;}).length;return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+or.name+'</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mo2?Math.round(c/mo2*100):0)+'%"></div></div></div>';}).join('');
+  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){
+    var c=mo.filter(function(s){return s.or===or.id;}).length;
+    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+or.name+'</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mo2?Math.round(c/mo2*100):0)+'%"></div></div></div>';
+  }).join('');
+
+  // 被擋刀統計
+  var moEmLogs=emergencyLogs.filter(function(e){var d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var blockedCount={};
+  moEmLogs.forEach(function(e){blockedCount[e.blockedDoctor]=(blockedCount[e.blockedDoctor]||0)+1;});
+  var blockedArr=Object.keys(blockedCount).map(function(k){return{name:k,count:blockedCount[k]};}).sort(function(a,b){return b.count-a.count;});
+  var mbx=blockedArr.length?blockedArr[0].count:0;
+  document.getElementById('blocked-bars').innerHTML=blockedArr.length?blockedArr.map(function(b){
+    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+b.name+'</span><span style="color:var(--orange);font-weight:600">被擋 '+b.count+' 次</span></div><div class="bar-track"><div class="bar-fill bar-fill-orange" style="width:'+(mbx?Math.round(b.count/mbx*100):0)+'%"></div></div></div>';
+  }).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
+
+  var detail=moEmLogs.slice(0,5).map(function(e){return e.date.replace(/\d{4}-/,'').replace('-','/')+' '+e.orName+' — '+e.blockedDoctor+' 被 '+e.emergencyDoctor+' 插刀';}).join('　');
+  document.getElementById('blocked-detail').textContent=detail;
 }
 
 // ══ 刀房管理 ══
 var DAYS=[{d:1,n:'週一'},{d:2,n:'週二'},{d:3,n:'週三'},{d:4,n:'週四'},{d:5,n:'週五'},{d:6,n:'週六'},{d:0,n:'週日'}];
-function renderAdminOR(){if(currentUser.role!=='admin')return;var l=document.getElementById('or-admin-list');l.innerHTML='';ors.forEach(function(or){l.appendChild(buildORBlock(or));});}
+
+function showAddORModal(){document.getElementById('new-or-name').value='';openModal('add-or-modal');}
+function confirmAddOR(){
+  var name=document.getElementById('new-or-name').value.trim();
+  if(!name){showToast('請輸入刀房名稱');return;}
+  var newId=Math.max.apply(null,ors.map(function(o){return o.id;}).concat([0]))+1;
+  var newOR={id:newId,name:name,open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[1,1],4:[1,1],5:[1,1],6:[0,0],0:[0,0]}};
+  ors.push(newOR);saveData('ors_v2',ors);
+  addLog('新增刀房：'+name,'is-edit');
+  showToast('✓ 刀房已新增');
+  closeModal('add-or-modal');
+  renderAdminOR();populateORSelect();renderDashboard();
+}
+
+function askDeleteOR(id){
+  var or=getOR(id);if(!or)return;
+  var hasSched=schedules.find(function(s){return s.or===id;});
+  if(hasSched){showToast('此刀房尚有排程記錄，無法刪除');return;}
+  pendingDelete='OR_'+id;
+  document.getElementById('delete-modal-msg').textContent='確定要刪除刀房「'+or.name+'」？';
+  openModal('delete-modal');
+}
+// override confirmDelete 支援刀房刪除
+var _origConfirmDelete=confirmDelete;
+confirmDelete=function(){
+  if(pendingDelete&&String(pendingDelete).indexOf('OR_')===0){
+    var orId=parseInt(String(pendingDelete).replace('OR_',''));
+    var or=getOR(orId);
+    ors=ors.filter(function(o){return o.id!==orId;});
+    saveData('ors_v2',ors);
+    addLog('刪除刀房：'+(or?or.name:''),'is-close');
+    showToast('✓ 刀房已刪除');
+    closeModal('delete-modal');pendingDelete=null;
+    renderAdminOR();populateORSelect();renderDashboard();
+  } else {
+    _origConfirmDelete();
+  }
+};
+
+function renderAdminOR(){
+  if(currentUser.role!=='admin')return;
+  var l=document.getElementById('or-admin-list');l.innerHTML='';
+  ors.forEach(function(or){l.appendChild(buildORBlock(or));});
+}
 function buildORBlock(or){
-  var block=document.createElement('div');block.className='or-block'+(or.open?'':' is-closed');block.id='orblock-'+or.id;
+  var block=document.createElement('div');block.className='or-block'+(or.open?'':' is-closed');
   var hdr=document.createElement('div');hdr.className='or-block-header';
   var nb=document.createElement('div');nb.className='or-num-badge '+(or.open?'or-num-open':'or-num-closed');nb.textContent=or.id;
   var nw=document.createElement('div');nw.className='or-name-wrap';nw.id='namewrap-'+or.id;renderNameDisplay(or,nw);
   var sb=document.createElement('span');sb.className='badge '+(or.open?'badge-green':'badge-gray');sb.textContent=or.open?'開放中':'停用中';
-  var tg=document.createElement('label');tg.className='toggle';tg.innerHTML='<input type="checkbox" id="toggle-'+or.id+'" '+(or.open?'checked':'')+'><span class="toggle-slider"></span>';
-  tg.querySelector('input').addEventListener('change',function(e){if(!e.target.checked){showClosePanel(or.id);e.target.checked=true;}else reopenOR(or.id);});
-  hdr.append(nb,nw,sb,tg);block.appendChild(hdr);
+  var tg=document.createElement('label');tg.className='toggle';tg.innerHTML='<input type="checkbox" '+(or.open?'checked':'')+'><span class="toggle-slider"></span>';
+  tg.querySelector('input').addEventListener('change',function(e){if(!e.target.checked){showClosePanel(or.id,block);e.target.checked=true;}else reopenOR(or.id);});
+  var delBtn=document.createElement('button');delBtn.className='btn btn-danger btn-sm';delBtn.textContent='刪除';delBtn.onclick=function(){askDeleteOR(or.id);};
+  hdr.append(nb,nw,sb,tg,delBtn);block.appendChild(hdr);
   if(!or.open&&or.reason){var ci=document.createElement('div');ci.className='banner banner-warn';ci.style.marginBottom='12px';ci.innerHTML='🔒 停用中：'+or.reason+(or.until?' — 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'');block.appendChild(ci);}
   var ws=document.createElement('div');ws.className='week-section';
   var wl=document.createElement('div');wl.className='week-label';wl.textContent='每週固定時段';
@@ -778,6 +1019,7 @@ function buildORBlock(or){
     col.append(ab,pb);wg.appendChild(col);
   });
   ws.append(wl,wg);block.appendChild(ws);
+  // 停用表單
   var cp=document.createElement('div');cp.className='close-form-panel';cp.id='closepanel-'+or.id;
   cp.innerHTML='<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--red)">設定停用</div><div class="form-grid" style="margin-bottom:10px"><div class="form-group"><label>停用原因</label><select id="reason-'+or.id+'"><option>設備維修</option><option>環境清潔</option><option>器材送修</option><option>臨時徵用</option><option>其他</option></select></div><div class="form-group"><label>停用至</label><input type="date" id="until-'+or.id+'"></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="hideClosePanel('+or.id+')">取消</button><button class="btn btn-danger btn-sm" onclick="confirmClose('+or.id+')">確認停用</button></div>';
   block.appendChild(cp);
@@ -785,15 +1027,15 @@ function buildORBlock(or){
   var sv=document.createElement('button');sv.className='btn btn-primary btn-sm';sv.innerHTML='✓ 儲存設定';sv.onclick=function(){saveOR(or.id);};ar.appendChild(sv);block.appendChild(ar);
   return block;
 }
-function renderNameDisplay(or,wrap){wrap.innerHTML='';var s=document.createElement('span');s.className='or-name-display';s.textContent=or.name;s.title='點擊修改名稱';s.onclick=function(){startEditName(or.id,wrap);};var h=document.createElement('div');h.className='edit-hint';h.textContent='點擊名稱可修改';wrap.append(s,h);}
+function renderNameDisplay(or,wrap){wrap.innerHTML='';var s=document.createElement('span');s.className='or-name-display';s.textContent=or.name;s.title='點擊修改';s.onclick=function(){startEditName(or.id,wrap);};var h=document.createElement('div');h.className='edit-hint';h.textContent='點擊名稱可修改';wrap.append(s,h);}
 function startEditName(id,wrap){var or=getOR(id);wrap.innerHTML='';var inp=document.createElement('input');inp.className='or-name-input';inp.value=or.name;inp.maxLength=20;inp.onblur=function(){saveNameEdit(id,inp.value,wrap);};inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderNameDisplay(or,wrap);};var btn=document.createElement('button');btn.className='btn btn-primary btn-sm';btn.style.marginTop='4px';btn.textContent='確認';btn.onclick=function(){saveNameEdit(id,inp.value,wrap);};wrap.append(inp,btn);inp.focus();}
-function saveNameEdit(id,n,wrap){n=n.trim();var or=getOR(id);if(!n){renderNameDisplay(or,wrap);return;}if(n!==or.name){var old=or.name;or.name=n;saveData('ors',ors);addLog('修改「'+old+'」名稱為「'+n+'」','is-edit');showToast('✓ 名稱已更新');populateORSelect();}renderNameDisplay(or,wrap);}
+function saveNameEdit(id,n,wrap){n=n.trim();var or=getOR(id);if(!n){renderNameDisplay(or,wrap);return;}if(n!==or.name){or.name=n;saveData('ors_v2',ors);addLog('修改刀房名稱為「'+n+'」','is-edit');showToast('✓ 名稱已更新');populateORSelect();renderDashboard();}renderNameDisplay(or,wrap);}
 function toggleSess(orId,day,sess,btn){var or=getOR(orId);if(!or.open)return;or.sched[day][sess]=or.sched[day][sess]?0:1;btn.className='sess-btn '+(or.sched[day][sess]?(sess===0?'am-on':'pm-on'):'');}
 function showClosePanel(id){document.getElementById('closepanel-'+id).classList.add('show');}
 function hideClosePanel(id){document.getElementById('closepanel-'+id).classList.remove('show');}
-function confirmClose(id){var or=getOR(id);or.open=false;or.reason=document.getElementById('reason-'+id).value;or.until=document.getElementById('until-'+id).value;saveData('ors',ors);addLog('停用 '+or.name+'（'+or.reason+(or.until?'，至'+or.until.replace(/\d{4}-/,'').replace('-','/'):'')+'）','is-close');showToast('✓ 已停用 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
-function reopenOR(id){var or=getOR(id);or.open=true;or.reason='';or.until='';saveData('ors',ors);addLog('重新開放 '+or.name,'is-open');showToast('✓ 已開放 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
-function saveOR(id){saveData('ors',ors);addLog('儲存 '+getOR(id).name+' 時段設定','is-edit');showToast('✓ 設定已儲存');}
+function confirmClose(id){var or=getOR(id);or.open=false;or.reason=document.getElementById('reason-'+id).value;or.until=document.getElementById('until-'+id).value;saveData('ors_v2',ors);addLog('停用 '+or.name,'is-close');showToast('✓ 已停用 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
+function reopenOR(id){var or=getOR(id);or.open=true;or.reason='';or.until='';saveData('ors_v2',ors);addLog('重新開放 '+or.name,'is-open');showToast('✓ 已開放 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
+function saveOR(id){saveData('ors_v2',ors);addLog('儲存 '+getOR(id).name+' 時段設定','is-edit');showToast('✓ 設定已儲存');}
 function renderLogs(){var html='';logs.slice(0,20).forEach(function(l){html+='<div class="log-item"><div class="log-time">'+l.time+'</div><div class="log-actor">'+l.actor+'</div><div class="log-msg '+l.type+'">'+l.msg+'</div></div>';});var el=document.getElementById('log-list');if(el)el.innerHTML=html||'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無記錄</div>';}
 
 // ══ 串接 ══
