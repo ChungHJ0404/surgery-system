@@ -20,220 +20,163 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+
+/* Layout */
 .app{display:flex;min-height:100vh;}
-.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
-.main{margin-left:220px;flex:1;min-height:100vh;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;}
+.main{margin-left:220px;flex:1;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.content{padding:24px;}
+.page{display:none;}.page.active{display:block;}
+
+/* Sidebar */
 .sidebar-logo{padding:16px 20px;border-bottom:1px solid var(--border-light);}
-.sidebar-logo h1{font-size:13px;font-weight:700;line-height:1.4;}
+.sidebar-logo h1{font-size:13px;font-weight:700;line-height:1.5;}
 .sidebar-logo span{font-size:11px;color:var(--text-3);}
-.sidebar-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px;}
-
-/* ── 手機底部導覽列 ── */
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:200;padding:0;}
-.mobile-nav-inner{display:flex;align-items:stretch;}
-.mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;gap:3px;border:none;background:none;color:var(--text-3);font-size:10px;font-family:inherit;cursor:pointer;transition:color .15s;}
-.mobile-nav-btn.active{color:var(--green);}
-.mobile-nav-btn svg{width:20px;height:20px;}
-.mobile-topbar{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:50;align-items:center;justify-content:space-between;}
-.mobile-topbar-title{font-size:15px;font-weight:700;}
-
-/* ── 響應式斷點 ── */
-@media (max-width: 768px) {
-  .sidebar{display:none;}
-  .main{margin-left:0;padding-bottom:80px;}
-  .topbar{display:none;}
-  .mobile-topbar{display:flex;}
-  .mobile-nav{display:block;}
-  body{font-size:16px;}
-  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
-  .stat-card{padding:14px 16px;}
-  .stat-label{font-size:13px;}
-  .stat-value{font-size:30px;}
-  .stat-sub{font-size:13px;}
-  .content{padding:14px 14px 20px;}
-  .card{padding:16px 14px;margin-bottom:12px;}
-  .card-title{font-size:16px;flex-direction:column;align-items:flex-start;gap:10px;}
-  .form-grid{grid-template-columns:1fr;gap:12px;margin-bottom:12px;}
-  .form-grid.three{grid-template-columns:1fr;}
-  .form-grid.full{grid-template-columns:1fr;}
-  .form-group label{font-size:15px;margin-bottom:6px;}
-  .form-group input,.form-group select,.form-group textarea{padding:13px 14px;font-size:16px;border-radius:10px;}
-  .form-group textarea{height:90px;}
-  .btn{padding:12px 18px;font-size:15px;}
-  .btn-sm{padding:8px 14px;font-size:14px;}
-  .banner{font-size:14px;padding:12px 14px;}
-  .or-grid-header-row{display:none;}
-  .list-header,.list-row{font-size:14px;}
-  .col-wide{flex:2;}
-  .col{flex:1;}
-  .week-grid{grid-template-columns:repeat(7,1fr);}
-  .sess-btn{padding:8px 0;font-size:13px;}
-  .day-name{font-size:12px;}
-  .mobile-nav-btn{font-size:13px;padding:10px 4px 14px;}
-  .mobile-nav-btn svg{width:24px;height:24px;}
-  .mobile-topbar{padding:14px 16px;}
-  .mobile-topbar-title{font-size:18px;}
-  .toggle{width:46px;height:26px;}
-  .toggle-slider:before{width:20px;height:20px;}
-  .toggle input:checked + .toggle-slider:before{transform:translateX(20px);}
-  .auth-card{padding:28px 20px;width:95vw;}
-  .auth-title{font-size:22px;}
-  .auth-sub{font-size:15px;}
-  .auth-field label{font-size:15px;}
-  .auth-field input{padding:13px 14px;font-size:16px;}
-  .auth-btn{padding:14px;font-size:17px;}
-  .auth-tab{font-size:15px;padding:10px;}
-  .modal{width:95vw;padding:22px;}
-  .modal-title{font-size:17px;}
-  .badge{font-size:12px;padding:3px 10px;}
-}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left;}
+.sidebar-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text-2);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;transition:all .15s;}
 .nav-item:hover{background:var(--bg);color:var(--text);}
 .nav-item.active{background:var(--green-bg);color:var(--green);}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;}
 .sidebar-footer{padding:12px 14px;border-top:1px solid var(--border-light);}
-.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
 .avatar-admin{background:var(--purple-bg);color:var(--purple);}
 .avatar-dr{background:var(--green-bg);color:var(--green);}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.topbar-title{font-size:16px;font-weight:700;}
-.content{padding:24px;}
-.page{display:none;}
-.page.active{display:block;}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;}
 .stat-label{font-size:12px;color:var(--text-3);margin-bottom:6px;font-weight:500;}
-.stat-value{font-size:26px;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-value{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;}
 .stat-sub{font-size:12px;color:var(--text-3);}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:16px;}
-.card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:inherit;}
-.btn-primary{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:inherit;}
+.btn-primary{background:var(--green);color:#fff;}
 .btn-primary:hover{opacity:.88;}
 .btn-secondary{background:transparent;color:var(--text-2);border-color:var(--border);}
 .btn-secondary:hover{background:var(--bg);}
 .btn-danger{background:transparent;color:var(--red);border-color:var(--red-border);}
 .btn-danger:hover{background:var(--red-bg);}
-.btn-orange{background:var(--orange);color:#fff;border-color:var(--orange);}
-.btn-orange:hover{opacity:.88;}
-.btn-sm{padding:4px 10px;font-size:12px;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+
+/* Badge */
 .badge{display:inline-flex;align-items:center;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
 .badge-green{background:var(--green-bg);color:var(--green);}
-.badge-amber{background:var(--amber-bg);color:var(--amber);}
-.badge-red{background:var(--red-bg);color:var(--red);}
-.badge-gray{background:var(--gray-bg);color:var(--text-2);}
-.badge-blue{background:var(--blue-bg);color:var(--blue);}
-.badge-purple{background:var(--purple-bg);color:var(--purple);}
 .badge-orange{background:var(--orange-bg);color:var(--orange);}
-.or-grid-wrap{overflow-x:auto;}
-.or-grid{min-width:640px;}
-.or-grid-header{display:grid;grid-template-columns:100px repeat(4,1fr);gap:6px;margin-bottom:6px;}
-.or-grid-header-cell{font-size:11px;color:var(--text-3);font-weight:600;text-align:center;padding:4px 0;}
-.or-grid-row{display:grid;grid-template-columns:100px repeat(4,1fr);gap:6px;margin-bottom:6px;align-items:center;}
-.or-grid-label{font-size:12px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:5px;}
-.or-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.dot-open{background:var(--green);}
-.dot-closed{background:var(--text-3);}
-.slot{border-radius:var(--radius);padding:8px 10px;min-height:52px;font-size:12px;}
-.slot-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.slot-sub{font-size:11px;opacity:.8;margin-top:1px;}
-.slot-empty{background:var(--bg);border:1px dashed var(--border);color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:11px;}
-.slot-normal{background:var(--green-bg);border:1px solid var(--green-border);color:#0a5c3e;}
-.slot-emergency{background:var(--orange-bg);border:1px solid var(--orange-border);color:#7c2d12;}
-.slot-conflict{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
-.slot-closed{background:var(--gray-bg);border:1px solid var(--gray-border);color:var(--text-3);display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;grid-column:span 4;}
+.badge-gray{background:var(--gray-bg);color:var(--text-2);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+
+/* Form */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
 .form-grid.full{grid-template-columns:1fr;}
-.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border .15s;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;transition:border .15s;}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);}
 .form-group textarea{height:80px;resize:vertical;}
-.banner{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:14px;}
+.banner{display:flex;gap:10px;padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:14px;}
 .banner-warn{background:var(--red-bg);border:1px solid var(--red-border);color:#991b1b;}
 .banner-orange{background:var(--orange-bg);border:1px solid var(--orange-border);color:#7c2d12;}
+
+/* List */
 .list-header{display:flex;gap:8px;padding:0 0 8px;border-bottom:1px solid var(--border-light);font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
-.list-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border-light);font-size:13px;}
+.list-row{display:flex;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid var(--border-light);font-size:13px;}
 .list-row:last-child{border-bottom:none;}
-.col-wide{flex:2.5;}
+.col-xl{flex:3;}
+.col-lg{flex:2;}
 .col{flex:1;color:var(--text-2);}
 .col-sm{flex:.6;}
-.bar-wrap{display:flex;flex-direction:column;gap:14px;}
-.bar-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
-.bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .6s ease;}
-.bar-fill-orange{background:var(--orange);}
-.or-block{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;background:var(--surface);}
-.or-block.is-closed{background:var(--gray-bg);}
-.or-block-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.or-num-badge{width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
-.or-num-open{background:var(--green-bg);color:var(--green);}
-.or-num-closed{background:var(--gray-bg);color:var(--text-3);}
-.or-name-wrap{flex:1;}
-.or-name-display{font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px dashed var(--border);display:inline-block;}
+
+/* OR Cards */
+.or-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;}
+.or-card-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border-light);}
+.or-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-open{background:var(--green);}
+.dot-closed{background:var(--text-3);}
+.or-sessions{display:flex;flex-direction:column;gap:0;}
+.or-session-row{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border-light);}
+.or-session-row:last-child{border-bottom:none;}
+.sess-time{font-size:13px;font-weight:700;min-width:48px;color:var(--text-3);padding-top:2px;}
+.sess-empty{font-size:13px;color:var(--text-3);}
+.sess-filled{flex:1;}
+.sess-opname{font-size:14px;font-weight:600;margin-bottom:2px;}
+.sess-sub{font-size:12px;color:var(--text-2);}
+.sess-normal{color:var(--green);}
+.sess-emergency{color:var(--orange);}
+.sess-conflict{color:var(--red);}
+
+/* OR Admin */
+.or-admin-block{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px;background:var(--surface);}
+.or-admin-block.closed{background:var(--gray-bg);}
+.or-admin-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.or-name-display{font-size:15px;font-weight:700;cursor:pointer;border-bottom:1px dashed var(--border);}
 .or-name-display:hover{color:var(--green);}
-.or-name-input{font-size:15px;font-weight:700;border:none;border-bottom:2px solid var(--green);background:transparent;color:var(--text);outline:none;width:200px;padding:1px 4px;font-family:inherit;}
-.edit-hint{font-size:11px;color:var(--text-3);margin-top:2px;}
+.or-name-input{font-size:15px;font-weight:700;border:none;border-bottom:2px solid var(--green);background:transparent;outline:none;width:180px;font-family:inherit;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.day-col{display:flex;flex-direction:column;gap:3px;}
+.day-name{font-size:11px;color:var(--text-3);text-align:center;font-weight:600;margin-bottom:2px;}
+.sess-btn{padding:6px 0;font-size:11px;border-radius:5px;border:1px solid var(--border);cursor:pointer;text-align:center;background:var(--bg);color:var(--text-3);font-weight:500;font-family:inherit;transition:all .15s;}
+.sess-btn.am-on{background:var(--green-bg);color:var(--green);border-color:var(--green-border);font-weight:600;}
+.sess-btn.pm-on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600;}
+.sess-btn:hover:not(.locked){border-color:var(--green);color:var(--green);}
+.sess-btn.locked{opacity:.4;pointer-events:none;}
 .toggle{position:relative;width:38px;height:22px;display:inline-block;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;}
 .toggle-slider{position:absolute;inset:0;background:var(--gray-border);border-radius:11px;transition:.2s;cursor:pointer;}
 .toggle input:checked+.toggle-slider{background:var(--green);}
 .toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
 .toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
-.week-section{margin-top:12px;}
-.week-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.day-col{display:flex;flex-direction:column;gap:3px;}
-.day-name{font-size:11px;color:var(--text-3);text-align:center;font-weight:600;margin-bottom:2px;}
-.sess-btn{padding:5px 0;font-size:11px;border-radius:5px;border:1px solid var(--border);cursor:pointer;text-align:center;background:var(--bg);color:var(--text-3);font-weight:500;transition:all .15s;font-family:inherit;}
-.sess-btn:hover:not(.locked){border-color:var(--green);color:var(--green);}
-.sess-btn.am-on{background:var(--green-bg);color:var(--green);border-color:var(--green-border);font-weight:600;}
-.sess-btn.pm-on{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border);font-weight:600;}
-.sess-btn.locked{opacity:.45;pointer-events:none;}
-.close-form-panel{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;}
-.close-form-panel.show{display:block;}
-.log-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:12px;}
-.log-item:last-child{border-bottom:none;}
-.log-time{color:var(--text-3);min-width:88px;flex-shrink:0;}
-.log-actor{font-weight:600;min-width:60px;flex-shrink:0;}
-.log-msg{color:var(--text-2);}
-.log-msg.is-close{color:var(--red);}
-.log-msg.is-open{color:var(--green);}
-.log-msg.is-edit{color:var(--blue);}
-.log-msg.is-emergency{color:var(--orange);}
-#toast{position:fixed;bottom:20px;right:20px;background:#1a2030;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
-#toast.show{opacity:1;}
-/* modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:8000;display:none;}
+.close-panel{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);padding:14px;margin-top:12px;display:none;}
+.close-panel.show{display:block;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:8000;}
 .modal-overlay.show{display:flex;}
 .modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:420px;max-width:95vw;box-shadow:var(--shadow-md);}
 .modal-title{font-size:15px;font-weight:700;margin-bottom:16px;}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
-/* auth */
+
+/* Auth */
 #auth-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:400px;box-shadow:var(--shadow-md);}
-.auth-logo{font-size:28px;text-align:center;margin-bottom:8px;}
-.auth-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+.auth-logo{font-size:36px;text-align:center;margin-bottom:8px;}
+.auth-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;}
 .auth-sub{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:24px;}
 .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;}
-.auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
 .auth-tab.active{color:var(--green);border-bottom-color:var(--green);}
-.auth-panel{display:none;}
-.auth-panel.active{display:block;}
+.auth-panel{display:none;}.auth-panel.active{display:block;}
 .auth-field{margin-bottom:14px;}
-.auth-field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
-.auth-field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;outline:none;transition:border .15s;}
+.auth-field label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
+.auth-field input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:15px;font-family:inherit;outline:none;transition:border .15s;}
 .auth-field input:focus{border-color:var(--green);}
-.auth-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:4px;}
+.auth-btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;}
 .auth-btn:hover{opacity:.88;}
-.auth-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none;padding:8px;background:var(--red-bg);border-radius:var(--radius);}
+.auth-error{font-size:13px;color:var(--red);margin-top:10px;text-align:center;display:none;padding:8px;background:var(--red-bg);border-radius:var(--radius);}
 .pw-wrap{position:relative;}
-.pw-wrap input{padding-right:36px;}
-.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-3);font-size:16px;background:none;border:none;padding:0;}
-.pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all .3s;display:none;}
-.strength-weak{background:var(--red);width:33%;}
-.strength-medium{background:var(--amber);width:66%;}
-.strength-strong{background:var(--green);width:100%;}
+.pw-wrap input{padding-right:40px;}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;background:none;border:none;font-size:16px;color:var(--text-3);}
+
+/* Loading */
+#loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.spinner{width:40px;height:40px;border:3px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;background:#1a2030;color:#fff;font-size:13px;padding:10px 18px;border-radius:var(--radius);opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999;}
+#toast.show{opacity:1;}
+
+/* Stats bars */
+.bar-wrap{display:flex;flex-direction:column;gap:14px;}
+.bar-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+.bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--green);}
+.bar-fill-orange{background:var(--orange);}
+
+/* Setup */
 .setup-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-light);}
 .setup-step:last-child{border-bottom:none;}
 .step-num{width:28px;height:28px;border-radius:50%;background:var(--green-bg);color:var(--green);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
@@ -241,41 +184,83 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .step-title{font-weight:600;font-size:14px;margin-bottom:4px;}
 .step-desc{font-size:13px;color:var(--text-2);}
 .step-input{margin-top:8px;display:flex;gap:8px;}
-.step-input input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;}
+.step-input input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;}
 .step-input input:focus{border-color:var(--green);}
 code{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px;font-family:monospace;color:var(--text-2);}
 .connected-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;background:var(--green-bg);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600;margin-top:8px;}
-/* 急診橫幅 */
-.emergency-strip{background:var(--orange);color:#fff;font-size:12px;font-weight:700;padding:6px 20px;display:flex;align-items:center;gap:8px;}
-/* datalist combo */
-.combo-wrap{position:relative;}
+
+/* Mobile */
+.mobile-topbar{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:13px 16px;position:sticky;top:0;z-index:50;align-items:center;justify-content:space-between;}
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:200;}
+.mobile-nav-inner{display:flex;}
+.mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px 13px;gap:3px;border:none;background:none;color:var(--text-3);font-size:12px;font-family:inherit;cursor:pointer;}
+.mobile-nav-btn.active{color:var(--green);}
+.mobile-nav-btn svg{width:22px;height:22px;}
+
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{margin-left:0;padding-bottom:80px;}
+  .topbar{display:none;}
+  .mobile-topbar{display:flex;}
+  .mobile-nav{display:block;}
+  body{font-size:15px;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .stat-value{font-size:26px;}
+  .content{padding:14px;}
+  .card{padding:14px;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-group input,.form-group select,.form-group textarea{font-size:16px;padding:11px 12px;}
+  .btn{padding:10px 16px;font-size:14px;}
+  .auth-card{padding:28px 20px;width:95vw;}
+  .modal{width:95vw;padding:20px;}
+  .list-header,.list-row{font-size:13px;}
+}
 </style>
 </head>
 <body>
 
-<!-- 急診插刀確認 Modal -->
-<div class="modal-overlay" id="emergency-modal">
+<!-- Loading -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div style="font-size:14px;color:var(--text-2);font-weight:500">正在載入資料…</div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="del-modal">
   <div class="modal">
-    <div class="modal-title" style="color:var(--orange)">🚨 急診插刀</div>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">此時段已有排程，急診插刀將記錄為衝突並通知統計。</p>
-    <div style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-bottom:4px">
-      <span id="emergency-conflict-info"></span>
-    </div>
+    <div class="modal-title" style="color:var(--red)">⚠️ 確認刪除</div>
+    <p style="font-size:13px;color:var(--text-2)" id="del-modal-msg"></p>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('emergency-modal')">取消</button>
+      <button class="btn btn-secondary" onclick="closeModal('del-modal')">取消</button>
+      <button class="btn btn-danger" onclick="confirmDel()">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Emergency Modal -->
+<div class="modal-overlay" id="em-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--orange)">🚨 急診插刀確認</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">此時段已有排程，確認插刀後系統將記錄被擋刀資訊。</p>
+    <div style="background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);padding:10px 14px;font-size:13px;" id="em-conflict-info"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('em-modal')">取消</button>
       <button class="btn btn-orange" onclick="confirmEmergency()">確認插刀</button>
     </div>
   </div>
 </div>
 
-<!-- 刪除確認 Modal -->
-<div class="modal-overlay" id="delete-modal">
+<!-- Add OR Modal -->
+<div class="modal-overlay" id="add-or-modal">
   <div class="modal">
-    <div class="modal-title" style="color:var(--red)">⚠️ 確認刪除</div>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:4px" id="delete-modal-msg"></p>
+    <div class="modal-title">新增刀房</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label>刀房名稱</label>
+      <input type="text" id="new-or-name" placeholder="例：刀房 4、心臟刀房" maxlength="20">
+    </div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('delete-modal')">取消</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">確認刪除</button>
+      <button class="btn btn-secondary" onclick="closeModal('add-or-modal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddOR()">新增</button>
     </div>
   </div>
 </div>
@@ -283,39 +268,37 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
 <!-- Auth -->
 <div id="auth-screen">
   <div class="auth-card">
-    <div class="auth-logo" style="font-size:40px;text-align:center;margin-bottom:8px">&#10084;&#65039;</div>
+    <div class="auth-logo">❤️</div>
     <div class="auth-title">心臟血管外科</div>
     <div class="auth-sub">手術排程系統</div>
     <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login',this)">登入</div>
-      <div class="auth-tab" onclick="switchAuthTab('register',this)">註冊帳號</div>
+      <div class="auth-tab active" onclick="switchTab('login',this)">登入</div>
+      <div class="auth-tab" onclick="switchTab('register',this)">註冊帳號</div>
     </div>
     <div class="auth-panel active" id="panel-login">
-      <div class="auth-field"><label>代號</label><input type="text" id="login-code" placeholder="輸入代號" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()"></div>
+      <div class="auth-field"><label>代號</label><input type="text" id="l-code" placeholder="輸入代號" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="auth-field"><label>密碼</label>
-        <div class="pw-wrap"><input type="password" id="login-pw" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
-        <button class="pw-toggle" onclick="togglePw('login-pw',this)" tabindex="-1">👁</button></div>
+        <div class="pw-wrap"><input type="password" id="l-pw" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-eye" onclick="toggleEye('l-pw',this)" tabindex="-1">👁</button></div>
       </div>
       <button class="auth-btn" onclick="doLogin()">登入</button>
-      <div class="auth-error" id="login-error"></div>
+      <div class="auth-error" id="l-err"></div>
     </div>
     <div class="auth-panel" id="panel-register">
-      <div class="auth-field"><label>代號</label><input type="text" id="reg-code" placeholder="例：D001" maxlength="20" oninput="checkCodeAvailable()">
-        <div style="font-size:11px;margin-top:4px" id="code-hint"></div>
+      <div class="auth-field"><label>代號</label><input type="text" id="r-code" placeholder="例：D001" maxlength="20" oninput="checkCode()">
+        <div style="font-size:12px;margin-top:4px" id="r-code-hint"></div>
       </div>
-      <div class="auth-field"><label>姓名</label><input type="text" id="reg-name" placeholder="輸入真實姓名" maxlength="20"></div>
+      <div class="auth-field"><label>姓名</label><input type="text" id="r-name" placeholder="輸入真實姓名" maxlength="20"></div>
       <div class="auth-field"><label>密碼</label>
-        <div class="pw-wrap"><input type="password" id="reg-pw" placeholder="至少 6 個字元" oninput="checkPwStrength()">
-        <button class="pw-toggle" onclick="togglePw('reg-pw',this)" tabindex="-1">👁</button></div>
-        <div class="pw-strength" id="pw-strength-bar"></div>
-        <div style="font-size:11px;color:var(--text-3);margin-top:3px" id="pw-strength-text"></div>
+        <div class="pw-wrap"><input type="password" id="r-pw" placeholder="至少 6 個字元">
+        <button class="pw-eye" onclick="toggleEye('r-pw',this)" tabindex="-1">👁</button></div>
       </div>
       <div class="auth-field"><label>確認密碼</label>
-        <div class="pw-wrap"><input type="password" id="reg-pw2" placeholder="再輸入一次" onkeydown="if(event.key==='Enter')doRegister()">
-        <button class="pw-toggle" onclick="togglePw('reg-pw2',this)" tabindex="-1">👁</button></div>
+        <div class="pw-wrap"><input type="password" id="r-pw2" placeholder="再輸入一次" onkeydown="if(event.key==='Enter')doRegister()">
+        <button class="pw-eye" onclick="toggleEye('r-pw2',this)" tabindex="-1">👁</button></div>
       </div>
       <button class="auth-btn" onclick="doRegister()">註冊並登入</button>
-      <div class="auth-error" id="reg-error"></div>
+      <div class="auth-error" id="r-err"></div>
     </div>
   </div>
 </div>
@@ -325,38 +308,34 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   <aside class="sidebar">
     <div class="sidebar-logo">
       <h1>❤️ 心臟血管外科<br>手術排程系統</h1>
-      <span id="sidebar-date"></span>
+      <span id="sb-date"></span>
     </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="showPage('dashboard',this)">
+    <nav class="sidebar-nav" id="sb-nav">
+      <button class="nav-item active" onclick="goPage('dashboard',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>今日刀表
       </button>
-      <button class="nav-item" onclick="showPage('add',this)">
+      <button class="nav-item" onclick="goPage('add',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>新增排程
       </button>
-      <button class="nav-item" onclick="showPage('list',this)">
+      <button class="nav-item" onclick="goPage('list',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>排程列表
       </button>
-      <button class="nav-item" onclick="showPage('stats',this)">
+      <button class="nav-item" onclick="goPage('stats',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>統計報表
       </button>
-      <div id="admin-nav-item" style="display:none">
-        <button class="nav-item" onclick="showPage('admin',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>刀房管理
-        </button>
-      </div>
-      <div id="setup-nav-item" style="display:none">
-        <button class="nav-item" onclick="showPage('setup',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>串接設定
-        </button>
-      </div>
+      <button class="nav-item" id="nav-admin" style="display:none" onclick="goPage('admin',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>刀房管理
+      </button>
+      <button class="nav-item" id="nav-setup" style="display:none" onclick="goPage('setup',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>串接設定
+      </button>
     </nav>
     <div class="sidebar-footer">
       <div style="display:flex;align-items:center;gap:10px">
-        <div class="user-avatar" id="sidebar-avatar">管</div>
+        <div class="user-avatar" id="sb-avatar">管</div>
         <div>
-          <div style="font-size:13px;font-weight:500" id="sidebar-name"></div>
-          <div style="font-size:11px;color:var(--text-3)" id="sidebar-role-text"></div>
+          <div style="font-size:13px;font-weight:500" id="sb-name"></div>
+          <div style="font-size:11px;color:var(--text-3)" id="sb-role"></div>
         </div>
       </div>
       <button class="btn btn-secondary btn-sm" style="margin-top:10px;width:100%" onclick="doLogout()">登出</button>
@@ -364,18 +343,17 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   </aside>
 
   <main class="main">
-    <!-- 手機頂部 bar -->
-    <div class="mobile-topbar" id="mobile-topbar">
-      <div class="mobile-topbar-title" id="mobile-topbar-title">今日刀表</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="user-avatar" id="mobile-avatar" style="width:28px;height:28px;font-size:11px">管</div>
-        <button class="btn btn-secondary btn-sm" onclick="doLogout()">登出</button>
-      </div>
-    </div>
+    <!-- Desktop topbar -->
     <div class="topbar">
-      <div class="topbar-title" id="topbar-title">今日刀表</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span id="topbar-date" style="font-size:13px;color:var(--text-3)"></span>
+      <div style="font-size:16px;font-weight:700" id="topbar-title">今日刀表</div>
+      <span style="font-size:13px;color:var(--text-3)" id="topbar-date"></span>
+    </div>
+    <!-- Mobile topbar -->
+    <div class="mobile-topbar" id="mob-topbar">
+      <div style="font-size:16px;font-weight:700" id="mob-title">今日刀表</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="user-avatar" id="mob-avatar" style="width:28px;height:28px;font-size:11px">管</div>
+        <button class="btn btn-secondary btn-sm" onclick="doLogout()">登出</button>
       </div>
     </div>
 
@@ -383,84 +361,71 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
 
       <!-- 今日刀表 -->
       <div class="page active" id="page-dashboard">
-        <!-- 統計卡片 -->
         <div class="stat-grid" id="stat-grid"></div>
-
-        <!-- 日期選擇 + 重新整理 -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <button class="btn btn-secondary btn-sm" onclick="changeDate(-1)">‹ 前一天</button>
-            <input type="date" id="dashboard-date" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none;font-weight:500" onchange="renderDashboard()">
-            <button class="btn btn-secondary btn-sm" onclick="changeDate(1)">後一天 ›</button>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-primary btn-sm" onclick="refreshDashboard()">↻ 重新整理</button>
-          </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="shiftDate(-1)">‹ 前一天</button>
+          <input type="date" id="dash-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;font-weight:500" onchange="loadAndRenderDashboard()">
+          <button class="btn btn-secondary btn-sm" onclick="shiftDate(1)">後一天 ›</button>
+          <button class="btn btn-primary btn-sm" onclick="loadAndRenderDashboard()" style="margin-left:auto">↻ 重新整理</button>
         </div>
-
-        <!-- 刀房排程 -->
-        <div id="dashboard-or-container"></div>
-
-        <!-- 急診插刀記錄 -->
-        <div class="card" id="emergency-stats-card">
+        <div id="or-container"></div>
+        <div class="card">
           <div class="card-title">🚨 急診插刀記錄（本月）</div>
-          <div id="emergency-stats-body"></div>
+          <div id="em-stats"></div>
         </div>
       </div>
 
       <!-- 新增排程 -->
       <div class="page" id="page-add">
-        <div class="card" style="max-width:680px">
+        <div class="card" style="max-width:700px">
           <div class="card-title">新增手術排程</div>
-          <div id="add-banners"></div>
-          <!-- 急診插刀開關 -->
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);margin-bottom:14px">
-            <label class="toggle"><input type="checkbox" id="f-emergency" onchange="toggleEmergencyMode()"><span class="toggle-slider" style="background:var(--gray-border)"></span></label>
+          <!-- 急診開關 -->
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:var(--radius);margin-bottom:16px">
+            <label class="toggle"><input type="checkbox" id="f-em" onchange="onEmToggle()"><span class="toggle-slider"></span></label>
             <div>
               <div style="font-size:13px;font-weight:600;color:var(--orange)">🚨 急診插刀模式</div>
-              <div style="font-size:11px;color:var(--text-3)">開啟後可插入已排程時段，系統自動記錄被擋刀資訊</div>
+              <div style="font-size:11px;color:var(--text-3)">開啟後可插入已排程時段，自動記錄被擋刀資訊</div>
             </div>
           </div>
+          <div id="add-banner"></div>
           <div class="form-grid">
-            <div class="form-group"><label>手術日期 *</label><input type="date" id="f-date" onchange="checkConflict()"></div>
-            <div class="form-group"><label>刀房 *</label><select id="f-or" onchange="checkConflict()"></select></div>
+            <div class="form-group"><label>手術日期 *</label><input type="date" id="f-date" onchange="checkSlot()"></div>
+            <div class="form-group"><label>刀房 *</label><select id="f-or" onchange="checkSlot()"></select></div>
           </div>
           <div class="form-grid">
             <div class="form-group"><label>時段 *</label>
-              <select id="f-session" onchange="checkConflict()">
+              <select id="f-sess" onchange="checkSlot()">
                 <option value="08:00">08:00</option><option value="10:00">10:00</option>
                 <option value="13:00">13:00</option><option value="15:00">15:00</option>
               </select>
             </div>
             <div class="form-group"><label>預估時間 *</label>
-              <select id="f-duration">
+              <select id="f-dur">
                 <option value="1">1 小時</option><option value="2" selected>2 小時</option>
                 <option value="3">3 小時</option><option value="4">4 小時以上</option>
               </select>
             </div>
           </div>
           <div class="form-grid">
-            <div class="form-group"><label>主刀醫師 *</label><select id="f-doctor"></select></div>
+            <div class="form-group"><label>主刀醫師 *</label><select id="f-dr"></select></div>
             <div class="form-group"></div>
           </div>
           <div class="form-grid">
-            <div class="form-group"><label>病患姓名</label><input type="text" id="f-patname" placeholder="輸入病患姓名"></div>
-            <div class="form-group"><label>病歷號</label><input type="text" id="f-chartno" placeholder="輸入病歷號"></div>
+            <div class="form-group"><label>病患姓名</label><input type="text" id="f-pat" placeholder="輸入病患姓名"></div>
+            <div class="form-group"><label>病歷號</label><input type="text" id="f-chart" placeholder="輸入病歷號"></div>
           </div>
           <div class="form-grid full">
             <div class="form-group">
               <label>術式名稱 * <span style="font-size:11px;color:var(--text-3);font-weight:400">（可選擇或直接輸入）</span></label>
-              <div class="combo-wrap">
-                <input type="text" id="f-opname" list="opname-list" placeholder="選擇或輸入術式名稱" autocomplete="off">
-                <datalist id="opname-list"></datalist>
-              </div>
+              <input type="text" id="f-op" list="op-list" placeholder="選擇或輸入術式名稱" autocomplete="off">
+              <datalist id="op-list"></datalist>
             </div>
           </div>
           <div class="form-grid full">
             <div class="form-group"><label>備註</label><textarea id="f-note" placeholder="特殊器械需求、術前注意事項…"></textarea></div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button class="btn btn-secondary" onclick="resetForm()">清除</button>
+            <button class="btn btn-secondary" onclick="clearForm()">清除</button>
             <button class="btn btn-primary" id="submit-btn" onclick="submitSchedule()">送出排程</button>
           </div>
         </div>
@@ -470,10 +435,10 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
       <div class="page" id="page-list">
         <div class="card">
           <div class="card-title">
-            <span>排程列表</span>
-            <div style="display:flex;gap:8px;align-items:center">
-              <select id="filter-doctor" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderList()"><option value="">全部醫師</option></select>
-              <select id="filter-period" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderList()">
+            排程列表
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="flt-dr" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderList()"><option value="">全部醫師</option></select>
+              <select id="flt-period" style="font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderList()">
                 <option value="week">本週</option><option value="month">本月</option><option value="year">本年</option><option value="all">全部</option>
               </select>
               <button class="btn btn-primary btn-sm" onclick="exportCSV()">↓ 匯出 CSV</button>
@@ -485,22 +450,21 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
 
       <!-- 統計報表 -->
       <div class="page" id="page-stats">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <span style="font-size:16px;font-weight:700">統計報表</span>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:12px;color:var(--text-3)">目標台數：月</span>
-            <input type="number" id="target-month" min="1" max="999" style="width:60px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
-            <span style="font-size:12px;color:var(--text-3)">年</span>
-            <input type="number" id="target-year" min="1" max="9999" style="width:70px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <span style="color:var(--text-3)">月目標</span>
+            <input type="number" id="tgt-month" min="1" style="width:60px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
+            <span style="color:var(--text-3)">年目標</span>
+            <input type="number" id="tgt-year" min="1" style="width:70px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none" onchange="saveTargets()">
           </div>
         </div>
         <div class="stat-grid" id="stat-grid-2"></div>
-        <div class="card"><div class="card-title">各醫師手術量（本月）</div><div class="bar-wrap" id="doctor-bars"></div></div>
+        <div class="card"><div class="card-title">各醫師手術量（本月）</div><div class="bar-wrap" id="dr-bars"></div></div>
         <div class="card"><div class="card-title">各刀房使用狀況（本月）</div><div class="bar-wrap" id="or-bars"></div></div>
         <div class="card">
           <div class="card-title">🚨 急診插刀統計（被擋刀次數）</div>
           <div class="bar-wrap" id="blocked-bars"></div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:12px" id="blocked-detail"></div>
         </div>
       </div>
 
@@ -511,12 +475,12 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
             <span style="font-size:16px;font-weight:700">刀房管理</span>
             <span class="badge badge-purple">僅限管理員</span>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="showAddORModal()">＋ 新增刀房</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddOR()">＋ 新增刀房</button>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:14px">
-          <div class="badge badge-green" style="font-size:12px;padding:4px 10px">■ 上午時段</div>
-          <div class="badge badge-blue" style="font-size:12px;padding:4px 10px">■ 下午時段</div>
-          <div class="badge badge-gray" style="font-size:12px;padding:4px 10px">□ 未開放</div>
+          <span class="badge badge-green" style="font-size:12px;padding:4px 10px">■ 上午</span>
+          <span class="badge" style="background:var(--blue-bg);color:var(--blue);font-size:12px;padding:4px 10px">■ 下午</span>
+          <span class="badge badge-gray" style="font-size:12px;padding:4px 10px">□ 未開放</span>
         </div>
         <div id="or-admin-list"></div>
         <div class="card"><div class="card-title">操作記錄</div><div id="log-list"></div></div>
@@ -539,17 +503,17 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
               <div class="step-title">貼上 Apps Script 網址</div>
               <div class="step-input">
                 <input type="text" id="sheets-url-input" placeholder="https://script.google.com/…">
-                <button class="btn btn-primary btn-sm" onclick="saveSheetURL()">儲存</button>
+                <button class="btn btn-primary btn-sm" onclick="saveURL()">儲存</button>
               </div>
-              <div id="sheets-connected" style="display:none"><div class="connected-badge">✓ 已連線</div></div>
+              <div id="url-connected" style="display:none"><div class="connected-badge">✓ 已連線</div></div>
             </div>
           </div>
           <div class="setup-step">
             <div class="step-num">3</div>
             <div class="step-body">
               <div class="step-title">測試連線</div>
-              <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="testConnection()">測試連線</button>
-              <div id="test-result" style="font-size:12px;margin-top:8px;color:var(--text-3)"></div>
+              <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="testConn()">測試連線</button>
+              <div id="conn-result" style="font-size:12px;margin-top:8px;color:var(--text-3)"></div>
             </div>
           </div>
         </div>
@@ -559,1096 +523,679 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   </main>
 </div>
 
-<!-- 手機底部導覽列 -->
-<div class="mobile-nav" id="mobile-nav">
+<!-- Mobile nav -->
+<div class="mobile-nav" id="mob-nav">
   <div class="mobile-nav-inner">
-    <button class="mobile-nav-btn active" id="mnav-dashboard" onclick="showPage('dashboard',this);updateMobileNav('dashboard')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      刀表
+    <button class="mobile-nav-btn active" id="mn-dashboard" onclick="goPage('dashboard',this);syncMobNav('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>刀表
     </button>
-    <button class="mobile-nav-btn" id="mnav-add" onclick="showPage('add',this);updateMobileNav('add')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-      新增
+    <button class="mobile-nav-btn" id="mn-add" onclick="goPage('add',this);syncMobNav('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>新增
     </button>
-    <button class="mobile-nav-btn" id="mnav-list" onclick="showPage('list',this);updateMobileNav('list')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      列表
+    <button class="mobile-nav-btn" id="mn-list" onclick="goPage('list',this);syncMobNav('list')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>列表
     </button>
-    <button class="mobile-nav-btn" id="mnav-stats" onclick="showPage('stats',this);updateMobileNav('stats')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      統計
+    <button class="mobile-nav-btn" id="mn-stats" onclick="goPage('stats',this);syncMobNav('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>統計
     </button>
-    <button class="mobile-nav-btn" id="mnav-admin" style="display:none" onclick="showPage('admin',this);updateMobileNav('admin')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-      管理
+    <button class="mobile-nav-btn" id="mn-admin" style="display:none" onclick="goPage('admin',this);syncMobNav('admin')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>管理
     </button>
   </div>
 </div>
-
-<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9998;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-  <div style="width:40px;height:40px;border:3px solid var(--green-bg);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite"></div>
-  <div style="font-size:15px;color:var(--text-2);font-weight:500">正在載入資料…</div>
-</div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <div id="toast"></div>
 
-<!-- 新增刀房 Modal -->
-<div class="modal-overlay" id="add-or-modal">
-  <div class="modal">
-    <div class="modal-title">新增刀房</div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label>刀房名稱</label>
-      <input type="text" id="new-or-name" placeholder="例：刀房 5、心臟刀房" maxlength="20">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('add-or-modal')">取消</button>
-      <button class="btn btn-primary" onclick="confirmAddOR()">新增</button>
-    </div>
-  </div>
-</div>
-
 <script>
-// ══ 術式清單 ══
-var OP_LIST = [
-  'Open heart for ASD',
-  'Open heart for VSD',
-  'Open heart for T/F',
-  'Open heart for CABG 1',
-  'Open heart for CABG 2',
-  'Open heart for CABG 3',
-  'Anastomosis of blood vessel',
-  'Surgical obliteration for PDA',
-  'Surgery for COA',
-  'Mitral valve replacement',
-  'Aortic valve replacement',
-  'Double valve replacement',
-  'Triple valves replacement',
-  'Tricuspid valve repair',
-  'Tricuspid valver replacement',
-  'Pace-maker implantation',
-  'Ventricular aneurysm',
-  'Thoracic aortic aneurysm',
-  'Abdominal aortic aneurysm',
-  'Excision of A-V fistula',
-  'A-V fistula',
-  'Embolectomy',
-  'Thromboendarterectomy patchangioplasty or bypass graft for ASO',
-  'Ligatino of esophageal varices transthoracic or transabdominal',
-  'High ligation,stripping & local excision for varicose vein,one leg',
-  'Bil. High ligation, stripping & local excision for varicose veins',
-  'Devascularization for esophageal varices',
-  'Vascular repair',
-  'A-V shunt for hemodialysis',
-  'TGA',
-  'TAPVR',
-  'Endocardial curhion defect',
-  'Open heart for Internal mammary arterycoronary bypass (1) One vessel',
-  'Open heart for Internal mammary arterycoronary bypass (1) Two vessels',
-  'Pericardiectomy',
-  'Pericardiotomy with exploration',
-  'Exploratory cardiotomy includes removal of foreign body',
-  'Valvuloplasty for AV or MV, TV',
-  'Repair fistula sinus of valsalva',
-  'Closed mitral or open mitral commissurotomy',
-  'Exploration vascular',
-  'Pulmonary ortary banding',
-  'Repair aorto-pulmonary window',
-  'Excision of canotid tumor or aneurysm',
-  'pulmonary valve commissurotomy',
-  'PTA(ANGIOPLASTY)',
-  'Arteriography of extremity',
-  'Antegrade venography',
-  'Stenting for Iliac vessel',
-  'Transcatheter Aortic Valve Implantation(TAVI)',
-  'Common carotid artery, one side',
-  'Common carotid artery, both side',
-  'Stenting for head &neck vessel (one vessel)',
-  'Percutaneous transluminal deployment of veinous device',
-  'Percutaneous transluminal catheter retrieval of vasculer/foreign',
-  'Surgery for A type aortic dissection',
-  'Intra-operative echo',
-  'Therapeuticcatheterimplantation-Hickmancatherimplantation',
-  'T.A.E(trans-arterial embolization)',
-  'Coronary artery bypass grafting(CABG)-4 vessels',
-  'Coronary artery bypass grafting(CABG)-5 vessels',
-  'Coronary artery bypass grafting(CABG)-6 vessels',
-  'Removal of Cardiac Lead from Heart, Percutaneous Approach',
-  'Fontan operation',
-  'Hybrid multiple axial intra operative (<6hr)',
-  'Open Femoro-femoral bypass, Femoro-popliteal bypass, Axillo-femoral',
-  'Open femoro-infraknee distal bypass, one vessel',
-  'Open femoro-infraknee distal bypass, two vessels',
-  'Therapeutic catheter implantation — PICC',
-  '(手術費健保給付)Xi Robotic Valvular and/or annuloplasty',
-  '(手術費健保給付)Xi Robotic Single valve replacement',
-  '(手術費健保給付)Xi Robotic Repair, atrial septal defect, secundum',
-  '(手術費健保給付)Xi Robotic Arrhythmia surgery via atriotomy',
-  '(純手術費)Xi da Vinci simple cardiac surgery',
-  '(純手術費)Xi da Vinci moderate cardiac surgery',
-  '(純手術費)Xi da Vinci complex cardiac surgery',
-  '(手術費健保給付)SP Robotic Valvular and/or annuloplasty',
-  '(手術費健保給付)SP Robotic Single valve replacement',
-  '(手術費健保給付)SP Robotic Repair, atrial septal defect, secundum',
-  '(手術費健保給付)SP Robotic Arrhythmia surgery via atriotomy',
-  '(純手術費)SP da Vinci simple cardiac surgery',
-  '(純手術費)SP da Vinci moderate cardiac surgery',
-  '(純手術費)SP da Vinci complex cardiac surgery',
-  'Transcatheter Edge-to-Edge Mitral valve repair',
-  'Vascular repair',
-  'A-V shunt'
-];
-
+// ══ 設定 ══
 var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwMx1sr9YkwrXAEXLlbUWspsENSYQQvM-L8zzbUxi_kdcHzrrIsy6Jl9XzuPIJhO2no/exec';
 
-// ══ 預設資料（Demo - 清空醫師）══
-var DEFAULT_USERS = [
-  {code:'admin', name:'管理員', pw:hashPw('admin123'), role:'admin', createdAt:'2025-05-25'}
-];
-var DEFAULT_ORS = [
-  {id:1,name:'刀房 1',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,0],3:[1,1],4:[1,0],5:[1,1],6:[0,0],0:[0,0]}},
-  {id:2,name:'刀房 2',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[1,1],4:[1,1],5:[1,1],6:[0,0],0:[0,0]}},
-  {id:3,name:'刀房 3',open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[0,0],4:[1,1],5:[1,0],6:[0,0],0:[0,0]}}
-];
-var DEFAULT_SCHEDULES = [];
-var DEFAULT_LOGS = [];
-var DEFAULT_EMERGENCY_LOG = []; // {date, orName, session, blockedDoctor, blockedOpname, emergencyDoctor, emergencyOpname}
+// ══ 術式清單 ══
+var OP_LIST=['Open heart for ASD','Open heart for VSD','Open heart for T/F','Open heart for CABG 1','Open heart for CABG 2','Open heart for CABG 3','Anastomosis of blood vessel','Surgical obliteration for PDA','Surgery for COA','Mitral valve replacement','Aortic valve replacement','Double valve replacement','Triple valves replacement','Tricuspid valve repair','Tricuspid valver replacement','Pace-maker implantation','Ventricular aneurysm','Thoracic aortic aneurysm','Abdominal aortic aneurysm','Excision of A-V fistula','A-V fistula','Embolectomy','Thromboendarterectomy patchangioplasty or bypass graft for ASO','Ligatino of esophageal varices transthoracic or transabdominal','High ligation,stripping & local excision for varicose vein,one leg','Bil. High ligation, stripping & local excision for varicose veins','Devascularization for esophageal varices','Vascular repair','A-V shunt for hemodialysis','TGA','TAPVR','Endocardial curhion defect','Open heart for Internal mammary arterycoronary bypass (1) One vessel','Open heart for Internal mammary arterycoronary bypass (1) Two vessels','Pericardiectomy','Pericardiotomy with exploration','Exploratory cardiotomy includes removal of foreign body','Valvuloplasty for AV or MV, TV','Repair fistula sinus of valsalva','Closed mitral or open mitral commissurotomy','Exploration vascular','Pulmonary ortary banding','Repair aorto-pulmonary window','Excision of canotid tumor or aneurysm','pulmonary valve commissurotomy','PTA(ANGIOPLASTY)','Arteriography of extremity','Antegrade venography','Stenting for Iliac vessel','Transcatheter Aortic Valve Implantation(TAVI)','Common carotid artery, one side','Common carotid artery, both side','Stenting for head &neck vessel (one vessel)','Percutaneous transluminal deployment of veinous device','Percutaneous transluminal catheter retrieval of vasculer/foreign','Surgery for A type aortic dissection','Intra-operative echo','Therapeuticcatheterimplantation-Hickmancatherimplantation','T.A.E(trans-arterial embolization)','Coronary artery bypass grafting(CABG)-4 vessels','Coronary artery bypass grafting(CABG)-5 vessels','Coronary artery bypass grafting(CABG)-6 vessels','Removal of Cardiac Lead from Heart, Percutaneous Approach','Fontan operation','Hybrid multiple axial intra operative (<6hr)','Open Femoro-femoral bypass, Femoro-popliteal bypass, Axillo-femoral','Open femoro-infraknee distal bypass, one vessel','Open femoro-infraknee distal bypass, two vessels','Therapeutic catheter implantation — PICC','(手術費健保給付)Xi Robotic Valvular and/or annuloplasty','(手術費健保給付)Xi Robotic Single valve replacement','(手術費健保給付)Xi Robotic Repair, atrial septal defect, secundum','(手術費健保給付)Xi Robotic Arrhythmia surgery via atriotomy','(純手術費)Xi da Vinci simple cardiac surgery','(純手術費)Xi da Vinci moderate cardiac surgery','(純手術費)Xi da Vinci complex cardiac surgery','(手術費健保給付)SP Robotic Valvular and/or annuloplasty','(手術費健保給付)SP Robotic Single valve replacement','(手術費健保給付)SP Robotic Repair, atrial septal defect, secundum','(手術費健保給付)SP Robotic Arrhythmia surgery via atriotomy','(純手術費)SP da Vinci simple cardiac surgery','(純手術費)SP da Vinci moderate cardiac surgery','(純手術費)SP da Vinci complex cardiac surgery','Transcatheter Edge-to-Edge Mitral valve repair','Vascular repair','A-V shunt'];
 
-function loadData(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
-function saveData(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+// ══ 狀態 ══
+var CU=null; // 目前使用者
+var DATA={schedules:[],users:[],ors:[],emergencyLogs:[],logs:[]};
+var pendingDel=null, pendingEM=null;
+var SESSIONS=['08:00','10:00','13:00','15:00'];
+var DAYS=[{d:1,n:'週一'},{d:2,n:'週二'},{d:3,n:'週三'},{d:4,n:'週四'},{d:5,n:'週五'},{d:6,n:'週六'},{d:0,n:'週日'}];
 
-var users         = loadData('users_v2', DEFAULT_USERS);
-var ors           = loadData('ors_v2', DEFAULT_ORS);
-var schedules     = loadData('schedules_v2', DEFAULT_SCHEDULES);
-var logs          = loadData('logs_v2', DEFAULT_LOGS);
-var emergencyLogs = loadData('emergency_logs', DEFAULT_EMERGENCY_LOG);
-var currentUser   = null;
-var pendingEmergency = null;
-var pendingDelete    = null;
-
-function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
+// ══ 工具 ══
 function pad(n){return String(n).padStart(2,'0');}
-function toDateStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-
-// 把任何格式的日期轉成 yyyy-MM-dd
-function normDate(v){
-  if(!v) return '';
-  if(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-  var d = new Date(v);
-  if(!isNaN(d.getTime())) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  return String(v);
-}
-// 顯示用：MM/DD
-function dispDate(v){
-  var s = normDate(v);
-  if(!s) return '';
-  return s.replace(/^\d{4}-/,'').replace('-','/');
-}
-function genId(){return 's'+Date.now();}
+function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function fmtDate(v){if(!v)return '';if(v instanceof Date)return v.getFullYear()+'-'+pad(v.getMonth()+1)+'-'+pad(v.getDate());var s=String(v);if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.substring(0,10);try{var d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}catch(e){}return s;}
+function dispDate(v){var s=fmtDate(v);return s?s.replace(/^\d{4}-/,'').replace('-','/'):''}
+function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
+function isAdmin(u){return u&&(u.role==='admin'||u.role==='管理員'||u.role==='管理者');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
-function addLog(msg,type){var now=new Date();logs.unshift({time:'今天 '+pad(now.getHours())+':'+pad(now.getMinutes()),actor:currentUser?currentUser.name:'system',msg:msg,type:type||''});saveData('logs_v2',logs);renderLogs();}
-function getOR(id){return ors.find(function(o){return o.id===id;});}
-function getUser(code){return users.find(function(u){return u.code===code;});}
+function loading(show){var o=document.getElementById('loading-overlay');if(o)o.style.display=show?'flex':'none';}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
+function getOR(id){return DATA.ors.find(function(o){return Number(o.id)===Number(id);});}
+function getUser(code){return DATA.users.find(function(u){return u.code===code;});}
 
-// ══ 術式 datalist ══
-function populateOpList(){
-  var dl=document.getElementById('opname-list');
-  dl.innerHTML=OP_LIST.map(function(op){return '<option value="'+op.replace(/"/g,'&quot;')+'">'+op+'</option>';}).join('');
+// ══ Sheets API ══
+function apiGet(params, cb){
+  var url=SHEETS_URL+'?'+Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
+  fetch(url,{redirect:'follow'})
+    .then(function(r){return r.text();})
+    .then(function(t){try{cb(JSON.parse(t));}catch(e){cb({status:'error',message:t.substring(0,100)});}})
+    .catch(function(e){cb({status:'error',message:e.toString()});});
+}
+function apiSend(params){
+  if(!SHEETS_URL)return;
+  var url=SHEETS_URL+'?'+Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]===undefined?'':params[k]);}).join('&');
+  fetch(url,{redirect:'follow'}).catch(function(){});
+}
+
+// ══ 載入所有資料 ══
+function loadAll(cb){
+  loading(true);
+  apiGet({action:'getAll'},function(data){
+    loading(false);
+    if(!data||data.status!=='ok'){showToast('⚠️ 無法連線 Sheets');if(cb)cb();return;}
+    if(data.schedules)data.schedules.forEach(function(s){s.date=fmtDate(s.date);});
+    if(data.ors)data.ors.forEach(function(o){o.id=Number(o.id);});
+    // 合併保留預設 admin
+    if(data.users&&data.users.length){
+      var adminExists=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+      if(!adminExists)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+      DATA.users=data.users;
+    }
+    if(data.schedules)DATA.schedules=data.schedules;
+    if(data.ors&&data.ors.length)DATA.ors=data.ors;
+    if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+    if(data.logs)DATA.logs=data.logs;
+    showToast('✓ 資料已同步');
+    if(cb)cb();
+  });
 }
 
 // ══ Auth ══
-function switchAuthTab(tab,btn){
+function switchTab(tab,btn){
   document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.auth-panel').forEach(function(p){p.classList.remove('active');});
   btn.classList.add('active');
   document.getElementById('panel-'+tab).classList.add('active');
-  document.getElementById('login-error').style.display='none';
-  document.getElementById('reg-error').style.display='none';
 }
-function togglePw(id,btn){var i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.textContent='🙈';}else{i.type='password';btn.textContent='👁';}}
-function checkPwStrength(){
-  var pw=document.getElementById('reg-pw').value;
-  var bar=document.getElementById('pw-strength-bar'),txt=document.getElementById('pw-strength-text');
-  if(!pw){bar.style.display='none';txt.textContent='';return;}
-  bar.style.display='block';
-  if(pw.length<6){bar.className='pw-strength strength-weak';txt.textContent='密碼太短';txt.style.color='var(--red)';}
-  else if(pw.length<10){bar.className='pw-strength strength-medium';txt.textContent='密碼強度：中';txt.style.color='var(--amber)';}
-  else{bar.className='pw-strength strength-strong';txt.textContent='密碼強度：強';txt.style.color='var(--green)';}
-}
-function checkCodeAvailable(){
-  var code=document.getElementById('reg-code').value.trim();
-  var hint=document.getElementById('code-hint');
+function toggleEye(id,btn){var i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
+function checkCode(){
+  var code=document.getElementById('r-code').value.trim();
+  var hint=document.getElementById('r-code-hint');
   if(!code){hint.textContent='';return;}
-  var exists=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-  if(exists){hint.textContent='⚠ 此代號已被使用';hint.style.color='var(--red)';}
-  else{hint.textContent='✓ 代號可使用';hint.style.color='var(--green)';}
-}
-function isAdminRole(role){
-  return role==='admin'||role==='管理員'||role==='管理者';
+  var exists=DATA.users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+  hint.textContent=exists?'⚠ 代號已被使用':'✓ 代號可使用';
+  hint.style.color=exists?'var(--red)':'var(--green)';
 }
 
 function doLogin(){
-  var code=document.getElementById('login-code').value.trim();
-  var pw=document.getElementById('login-pw').value;
-  var err=document.getElementById('login-error');err.style.display='none';
+  var code=document.getElementById('l-code').value.trim();
+  var pw=document.getElementById('l-pw').value;
+  var err=document.getElementById('l-err');err.style.display='none';
   if(!code||!pw){err.textContent='請填寫代號與密碼';err.style.display='block';return;}
-
-  // 確保預設 admin 帳號永遠存在
-  var defaultAdmins = DEFAULT_USERS.filter(function(u){ return isAdminRole(u.role); });
-  defaultAdmins.forEach(function(a){
-    if(!users.find(function(u){ return u.code.toLowerCase()===a.code.toLowerCase(); })){
-      users.push(a); saveData('users_v2', users);
+  loading(true);
+  // 先從 Sheets 載入最新資料
+  apiGet({action:'getAll'},function(data){
+    loading(false);
+    if(data&&data.status==='ok'){
+      if(data.users&&data.users.length){
+        var adminExists=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+        if(!adminExists)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+        DATA.users=data.users;
+      }
+      if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
+      if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+      if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+      if(data.logs)DATA.logs=data.logs;
     }
-  });
-
-  var u=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-  if(u && u.pw===hashPw(pw)){
-    currentUser=u;
+    // 也確保預設 admin 存在
+    if(!DATA.users.find(function(u){return u.code.toLowerCase()==='admin';})){
+      DATA.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+    }
+    var u=DATA.users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+    if(!u||u.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
+    CU=u;
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('main-app').style.display='flex';
-    initUI();
-    return;
-  }
-
-  // 本地找不到或密碼不對，從 Sheets 重新載入再試
-  if(SHEETS_URL){
-    var overlay=document.getElementById('loading-overlay');
-    if(overlay)overlay.style.display='flex';
-    apiGet({action:'getAll'},function(data){
-      if(overlay)overlay.style.display='none';
-      if(data&&data.status==='ok'){
-        if(data.users&&data.users.length){
-          var su=data.users;
-          defaultAdmins.forEach(function(a){
-            var ex=su.find(function(u){return u.code.toLowerCase()===a.code.toLowerCase();});
-            if(!ex) su.push(a);
-            else ex.role='admin';
-          });
-          users=su; saveData('users_v2',users);
-        }
-        if(data.ors&&data.ors.length){ors=data.ors;saveData('ors_v2',ors);}
-        if(data.schedules){schedules=data.schedules.map(function(s){s.date=normDate(s.date);return s;});saveData('schedules_v2',schedules);}
-      }
-      var u2=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-      if(!u2||u2.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
-      currentUser=u2;
-      document.getElementById('auth-screen').style.display='none';
-      document.getElementById('main-app').style.display='flex';
-      initUI();
-    });
-    return;
-  }
-  err.textContent='代號或密碼不正確';err.style.display='block';
+    initApp();
+  });
 }
+
 function doRegister(){
-  var code=document.getElementById('reg-code').value.trim();
-  var name=document.getElementById('reg-name').value.trim();
-  var pw=document.getElementById('reg-pw').value;
-  var pw2=document.getElementById('reg-pw2').value;
-  var err=document.getElementById('reg-error');err.style.display='none';
+  var code=document.getElementById('r-code').value.trim();
+  var name=document.getElementById('r-name').value.trim();
+  var pw=document.getElementById('r-pw').value;
+  var pw2=document.getElementById('r-pw2').value;
+  var err=document.getElementById('r-err');err.style.display='none';
   if(!code||!name||!pw||!pw2){err.textContent='請填寫所有欄位';err.style.display='block';return;}
-  if(pw.length<6){err.textContent='密碼至少需要 6 個字元';err.style.display='block';return;}
+  if(pw.length<6){err.textContent='密碼至少 6 個字元';err.style.display='block';return;}
   if(pw!==pw2){err.textContent='兩次密碼不一致';err.style.display='block';return;}
-  if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
-  var now=new Date();
-  var nu={code:code,name:name,pw:hashPw(pw),role:'doctor',createdAt:toDateStr(now)};
-  users.push(nu);saveData('users_v2',users);
-  if(SHEETS_URL)fetch(SHEETS_URL+'?action=addUser&code='+encodeURIComponent(code)+'&name='+encodeURIComponent(name)+'&pw='+encodeURIComponent(nu.pw)+'&role=doctor&createdAt='+encodeURIComponent(toDateStr(now))).catch(function(){});
-  currentUser=nu;
+  if(DATA.users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
+  var nu={code:code,name:name,pw:hashPw(pw),role:'doctor',createdAt:today()};
+  DATA.users.push(nu);
+  apiSend({action:'addUser',code:nu.code,name:nu.name,pw:nu.pw,role:'doctor',createdAt:nu.createdAt});
+  CU=nu;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
   showToast('✓ 註冊成功，歡迎 '+name+'！');
-  initUI();
+  initApp();
 }
+
 function doLogout(){
-  currentUser=null;
-  document.getElementById('login-code').value='';
-  document.getElementById('login-pw').value='';
-  document.getElementById('login-error').style.display='none';
+  CU=null;DATA={schedules:[],users:[],ors:[],emergencyLogs:[],logs:[]};
+  document.getElementById('l-code').value='';document.getElementById('l-pw').value='';
+  document.getElementById('l-err').style.display='none';
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('main-app').style.display='none';
 }
 
-// ══ Init ══
-function initUI(){
-  var isAdmin=isAdminRole(currentUser.role);
-  document.getElementById('admin-nav-item').style.display=isAdmin?'block':'none';
-  document.getElementById('setup-nav-item').style.display=isAdmin?'block':'none';
-  var mnavAdmin=document.getElementById('mnav-admin');
-  if(mnavAdmin) mnavAdmin.style.display=isAdmin?'':'none';
-  var av=document.getElementById('sidebar-avatar');
-  av.textContent=currentUser.name[0];av.className='user-avatar '+(isAdmin?'avatar-admin':'avatar-dr');
-  var mav=document.getElementById('mobile-avatar');
-  if(mav){mav.textContent=currentUser.name[0];mav.className='user-avatar '+(isAdmin?'avatar-admin':'avatar-dr');}
-  document.getElementById('sidebar-name').textContent=currentUser.name;
-  document.getElementById('sidebar-role-text').textContent=(isAdmin?'管理員':'醫師')+' ('+currentUser.code+')';
+// ══ 初始化 ══
+function initApp(){
+  var admin=isAdmin(CU);
+  document.getElementById('nav-admin').style.display=admin?'':'none';
+  document.getElementById('nav-setup').style.display=admin?'':'none';
+  document.getElementById('mn-admin').style.display=admin?'':'none';
+  var av=document.getElementById('sb-avatar');
+  av.textContent=CU.name[0];av.className='user-avatar '+(admin?'avatar-admin':'avatar-dr');
+  var mav=document.getElementById('mob-avatar');
+  mav.textContent=CU.name[0];mav.className='user-avatar '+(admin?'avatar-admin':'avatar-dr');
+  document.getElementById('sb-name').textContent=CU.name;
+  document.getElementById('sb-role').textContent=(admin?'管理員':'醫師')+' ('+CU.code+')';
   var now=new Date();
   var ds=now.getFullYear()+'/'+pad(now.getMonth()+1)+'/'+pad(now.getDate());
-  document.getElementById('sidebar-date').textContent=ds;
+  document.getElementById('sb-date').textContent=ds;
   document.getElementById('topbar-date').textContent=ds;
-  document.getElementById('dashboard-date').value=toDateStr(now);
-  populateOpList();populateDoctorSelect();populateORSelect();
-  if(!SHEETS_URL){renderDashboard();renderStats();renderList();}
-  if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('sheets-connected').style.display='block';}
-  showPage('dashboard',document.querySelector('.nav-item'));
+  // 術式清單
+  var dl=document.getElementById('op-list');
+  dl.innerHTML=OP_LIST.map(function(op){return '<option value="'+op.replace(/"/g,'&quot;')+'">';}).join('');
+  // 目標台數
+  var tm=localStorage.getItem('tgt-month')||'80';
+  var ty=localStorage.getItem('tgt-year')||'800';
+  document.getElementById('tgt-month').value=tm;
+  document.getElementById('tgt-year').value=ty;
+  // URL
+  if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('url-connected').style.display='block';}
+  // 先用現有資料render，再同步
+  populateDrSelect();
+  populateORSelect();
+  // 找最近有資料的日期
+  var dates=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
+  var td=today();
+  var best=td;
+  if(dates.length){
+    var future=dates.filter(function(d){return d>=td;}).sort();
+    var past=dates.filter(function(d){return d<td;}).sort().reverse();
+    if(future.length)best=future[0];else if(past.length)best=past[0];
+  }
+  document.getElementById('dash-date').value=best;
+  renderDashboard();
+  renderList();
+  renderStats();
+  goPage('dashboard',document.querySelector('.nav-item'));
 }
 
 // ══ 今日刀表 ══
-function showDebug(){
-  var dateVal = document.getElementById('dashboard-date').value;
-  var msg = '選擇日期：'+dateVal+'\n';
-  msg += '排程總筆數：'+schedules.length+'\n';
-  msg += '刀房總數：'+ors.length+'\n\n';
-  msg += '【刀房】\n';
-  if(ors.length){
-    ors.forEach(function(o,i){
-      msg += (i+1)+'. id='+o.id+' name='+o.name+' open='+o.open+'\n';
-    });
-  } else {
-    msg += '（空）\n';
-  }
-  msg += '\n【排程前5筆】\n';
-  schedules.slice(0,5).forEach(function(s,i){
-    msg += (i+1)+'. 日期=「'+s.date+'」 or='+s.or+' 術式='+s.opname+'\n';
-  });
-  alert(msg);
-  // 另外直接 fetch 測試
-  fetch(SHEETS_URL+'?action=getAll', {redirect:'follow'})
-    .then(function(r){return r.text();})
-    .then(function(t){
-      try{
-        var d=JSON.parse(t);
-        alert('Sheets 直接回傳：\n刀房數='+d.ors.length+'\n排程數='+d.schedules.length+'\n第一間刀房='+JSON.stringify(d.ors[0]));
-      }catch(e){
-        alert('解析失敗：'+t.substring(0,300));
-      }
-    })
-    .catch(function(e){alert('Fetch 失敗：'+e);});
-}
-
-function changeDate(delta){
-  var d=new Date(document.getElementById('dashboard-date').value);
-  if(isNaN(d.getTime())) d=new Date();
-  d.setDate(d.getDate()+delta);
-  document.getElementById('dashboard-date').value=toDateStr(d);
+function shiftDate(d){
+  var cur=new Date(document.getElementById('dash-date').value);
+  if(isNaN(cur.getTime()))cur=new Date();
+  cur.setDate(cur.getDate()+d);
+  document.getElementById('dash-date').value=fmtDate(cur);
   renderDashboard();
 }
 
-function refreshDashboard(){
-  if(!SHEETS_URL){renderDashboard();return;}
-  var overlay=document.getElementById('loading-overlay');
-  if(overlay)overlay.style.display='flex';
+function loadAndRenderDashboard(){
+  loading(true);
   apiGet({action:'getAll'},function(data){
-    if(overlay)overlay.style.display='none';
-    if(!data||data.status!=='ok'){showToast('⚠️ 連線失敗');renderDashboard();return;}
-    if(data.schedules){schedules=data.schedules.map(function(s){s.date=normDate(s.date);return s;});saveData('schedules_v2',schedules);}
-    if(data.ors&&data.ors.length){ors=data.ors;saveData('ors_v2',ors);}
-    if(data.users&&data.users.length){users=data.users;saveData('users_v2',users);}
-    if(data.emergencyLogs){emergencyLogs=data.emergencyLogs;saveData('emergency_logs',emergencyLogs);}
+    loading(false);
+    if(data&&data.status==='ok'){
+      if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
+      if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+      if(data.users&&data.users.length)DATA.users=data.users;
+      if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+      populateDrSelect();populateORSelect();
+    }
     showToast('✓ 已更新');
-    populateDoctorSelect();populateORSelect();
-    renderDashboard();
+    renderDashboard();renderList();renderStats();
   });
 }
 
 function renderDashboard(){
-  ors=loadData('ors_v2',DEFAULT_ORS);
-  schedules=loadData('schedules_v2',DEFAULT_SCHEDULES);
-  var dateVal=document.getElementById('dashboard-date').value;
-  if(!dateVal){dateVal=toDateStr(new Date());document.getElementById('dashboard-date').value=dateVal;}
-  var sessions=['08:00','10:00','13:00','15:00'];
-  var ts=schedules.filter(function(s){return normDate(s.date)===dateVal;});
-  var container=document.getElementById('dashboard-or-container');
-  container.innerHTML='';
-  if(!ors.length){
-    container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料，請聯絡管理員設定</div>';
-  }
-  ors.forEach(function(or){
-    var card=document.createElement('div');
-    card.className='card';card.style.marginBottom='12px';
-    var titleBg=or.open?'var(--green-bg)':'var(--gray-bg)';
-    var titleColor=or.open?'var(--green)':'var(--text-3)';
-    var header='<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:'+titleBg+';border-radius:var(--radius);margin:-2px -2px 14px -2px">'
-      +'<span style="width:10px;height:10px;border-radius:50%;background:'+(or.open?'var(--green)':'var(--text-3)')+';flex-shrink:0;display:inline-block"></span>'
-      +'<span style="font-size:15px;font-weight:700;color:'+titleColor+'">'+or.name+'</span>'
-      +(or.open
-        ?'<span style="margin-left:auto;font-size:12px;color:var(--green);font-weight:500">開放中</span>'
-        :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用'+(or.reason?' — '+or.reason:'')+'</span>')
+  var dateVal=document.getElementById('dash-date').value;
+  var ts=DATA.schedules.filter(function(s){return fmtDate(s.date)===dateVal;});
+  var container=document.getElementById('or-container');container.innerHTML='';
+  if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料</div>';return;}
+  DATA.ors.forEach(function(or){
+    var card=document.createElement('div');card.className='or-card';
+    // header
+    var hBg=or.open?'var(--green-bg)':'var(--gray-bg)';
+    var hColor=or.open?'var(--green)':'var(--text-3)';
+    card.innerHTML='<div class="or-card-header" style="background:'+hBg+'">'
+      +'<span class="or-dot '+(or.open?'dot-open':'dot-closed')+'"></span>'
+      +'<span style="font-size:15px;font-weight:700;color:'+hColor+'">'+or.name+'</span>'
+      +(or.open?'<span style="margin-left:auto;font-size:12px;color:var(--green);font-weight:500">開放中</span>'
+               :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
       +'</div>';
-    if(!or.open){card.innerHTML=header;container.appendChild(card);return;}
-    var slotsHtml='<div style="display:flex;flex-direction:column;gap:8px">';
-    sessions.forEach(function(sess){
-      var m=ts.filter(function(s){return Number(s.or)===Number(or.id)&&s.session===sess;});
+    if(!or.open){container.appendChild(card);return;}
+    var sessions=document.createElement('div');sessions.className='or-sessions';
+    SESSIONS.forEach(function(sess){
+      var m=ts.filter(function(s){return Number(s.or)===or.id&&s.session===sess;});
+      var row=document.createElement('div');row.className='or-session-row';
+      var timeSpan='<span class="sess-time">'+sess+'</span>';
       if(!m.length){
-        slotsHtml+='<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border-radius:var(--radius);border:1px dashed var(--border)">'
-          +'<span style="font-size:13px;font-weight:700;color:var(--text-3);min-width:46px">'+sess+'</span>'
-          +'<span style="font-size:13px;color:var(--text-3)">空</span></div>';
+        row.innerHTML=timeSpan+'<span class="sess-empty">空</span>';
       }else if(m.length>1){
-        slotsHtml+='<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)">'
-          +'<span style="font-size:13px;font-weight:700;color:var(--red);min-width:46px">'+sess+'</span>'
-          +'<span style="font-size:13px;color:var(--red);font-weight:600">⚠ 衝突 '+m.length+' 筆</span></div>';
+        row.innerHTML=timeSpan+'<span style="color:var(--red);font-weight:600">⚠ 衝突 '+m.length+' 筆</span>';
       }else{
         var s=m[0];var dr=getUser(s.doctor);
-        var bg=s.emergency?'var(--orange-bg)':'var(--green-bg)';
-        var bc=s.emergency?'1px solid var(--orange-border)':'1px solid var(--green-border)';
-        var tc=s.emergency?'var(--orange)':'var(--green)';
-        slotsHtml+='<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:'+bg+';border-radius:var(--radius);border:'+bc+'">'
-          +'<span style="font-size:13px;font-weight:700;color:'+tc+';min-width:46px;padding-top:2px">'+sess+'</span>'
-          +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-          +'<div style="font-size:12px;color:var(--text-2)">'
-          +(dr?'<span style="font-weight:500">'+dr.name+'</span>':'?')
-          +(s.patname?' &nbsp;·&nbsp; 👤 '+s.patname:'')
-          +(s.chartno?' &nbsp;·&nbsp; <span style="color:var(--text-3)">#'+s.chartno+'</span>':'')
-          +'</div></div></div>';
+        var cls=s.emergency?'sess-emergency':'sess-normal';
+        row.innerHTML=timeSpan+'<div class="sess-filled">'
+          +'<div class="sess-opname '+cls+'">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+          +'<div class="sess-sub">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
+          +'</div>';
       }
+      sessions.appendChild(row);
     });
-    slotsHtml+='</div>';
-    card.innerHTML=header+slotsHtml;
+    card.appendChild(sessions);
     container.appendChild(card);
   });
+  // 統計
   var em=ts.filter(function(s){return s.emergency;}).length;
-  var cc=ors.filter(function(o){return !o.open;}).length;
-  var moCount=schedules.filter(function(s){var d=new Date(normDate(s.date)),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).length;
-  document.getElementById('stat-grid').innerHTML=
-    sc('今日手術','color:var(--text)',ts.length,ors.filter(function(o){return o.open;}).length+' 間刀房開放')+
-    sc('急診插刀','color:var(--orange)',em,'今日')+
-    sc('停用刀房','color:var(--red)',cc,cc?ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無')+
-    sc('本月手術','color:var(--green)',moCount,'台');
-  renderEmergencyStats();
-}
-function sc(l,s,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="'+s+'">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
-
-
-function renderEmergencyStats(){
+  var cc=DATA.ors.filter(function(o){return !o.open;}).length;
   var now=new Date();
-  var mo=emergencyLogs.filter(function(e){var d=new Date(normDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
-  var body=document.getElementById('emergency-stats-body');
-  if(!mo.length){body.innerHTML='<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無急診插刀記錄</div>';return;}
-  var html='<div class="list-header"><span class="col">日期</span><span class="col">刀房/時段</span><span class="col">急診醫師</span><span class="col-wide">急診術式</span><span class="col">被擋醫師</span><span class="col-wide">被擋術式</span></div>';
+  var mo=DATA.schedules.filter(function(s){var d=new Date(fmtDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+  document.getElementById('stat-grid').innerHTML=
+    sc('今日手術','--text',ts.length,DATA.ors.filter(function(o){return o.open;}).length+' 間刀房開放')+
+    sc('急診插刀','--orange',em,'今日')+
+    sc('停用刀房','--red',cc,cc?DATA.ors.filter(function(o){return !o.open;}).map(function(o){return o.name;}).join('、'):'無')+
+    sc('本月手術','--green',mo,'台');
+  renderEmStats();
+}
+function sc(l,c,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="color:var('+c+')">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
+
+function renderEmStats(){
+  var now=new Date();
+  var mo=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var el=document.getElementById('em-stats');
+  if(!mo.length){el.innerHTML='<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無急診插刀記錄</div>';return;}
+  var html='<div class="list-header"><span class="col">日期</span><span class="col">刀房/時段</span><span class="col">急診醫師</span><span class="col-lg">急診術式</span><span class="col">被擋醫師</span><span class="col-lg">被擋術式</span></div>';
   mo.slice(0,10).forEach(function(e){
     html+='<div class="list-row">'
       +'<div class="col">'+dispDate(e.date)+'</div>'
       +'<div class="col">'+e.orName+' '+e.session+'</div>'
       +'<div class="col" style="color:var(--orange);font-weight:500">'+e.emergencyDoctor+'</div>'
-      +'<div class="col-wide" style="color:var(--orange)">🚨 '+e.emergencyOpname+'</div>'
+      +'<div class="col-lg" style="color:var(--orange)">🚨 '+e.emergencyOpname+'</div>'
       +'<div class="col" style="color:var(--red)">'+e.blockedDoctor+'</div>'
-      +'<div class="col-wide">'+e.blockedOpname+'</div>'
+      +'<div class="col-lg">'+e.blockedOpname+'</div>'
       +'</div>';
   });
-  body.innerHTML=html;
+  el.innerHTML=html;
 }
 
 // ══ 新增排程 ══
 function populateORSelect(){
   var sel=document.getElementById('f-or');sel.innerHTML='';
-  ors.forEach(function(or){
-    var o=document.createElement('option');o.value=or.id;o.textContent=or.name+(or.open?'':'（停用中）');o.disabled=!or.open;sel.appendChild(o);
-  });
-}
-function populateDoctorSelect(){
-  var sel=document.getElementById('f-doctor');var filt=document.getElementById('filter-doctor');
-  sel.innerHTML='';filt.innerHTML='<option value="">全部醫師</option>';
-  users.filter(function(u){return u.role==='doctor';}).forEach(function(u){
-    var o=document.createElement('option');o.value=u.code;o.textContent=u.name+' ('+u.code+')';
-    if(u.code===currentUser.code)o.selected=true;
+  DATA.ors.forEach(function(or){
+    var o=document.createElement('option');o.value=or.id;
+    o.textContent=or.name+(or.open?'':'（停用中）');o.disabled=!or.open;
     sel.appendChild(o);
-    var o2=o.cloneNode(true);o2.selected=false;filt.appendChild(o2);
   });
 }
-function toggleEmergencyMode(){
-  var isEm=document.getElementById('f-emergency').checked;
-  var btn=document.getElementById('submit-btn');
-  btn.className='btn '+(isEm?'btn-orange':'btn-primary');
-  btn.textContent=isEm?'🚨 確認急診插刀':'送出排程';
-  checkConflict();
+function populateDrSelect(){
+  var sel=document.getElementById('f-dr');
+  var flt=document.getElementById('flt-dr');
+  sel.innerHTML='';flt.innerHTML='<option value="">全部醫師</option>';
+  DATA.users.filter(function(u){return!isAdmin(u);}).forEach(function(u){
+    var o=document.createElement('option');o.value=u.code;o.textContent=u.name+' ('+u.code+')';
+    if(u.code===CU.code)o.selected=true;
+    sel.appendChild(o);
+    var o2=o.cloneNode(true);o2.selected=false;flt.appendChild(o2);
+  });
 }
-function checkConflict(){
-  var d=document.getElementById('f-date').value,orId=parseInt(document.getElementById('f-or').value),sess=document.getElementById('f-session').value;
-  var isEm=document.getElementById('f-emergency').checked;
-  var b=document.getElementById('add-banners');b.innerHTML='';
-  if(!d||!orId)return;
+function onEmToggle(){
+  var em=document.getElementById('f-em').checked;
+  var btn=document.getElementById('submit-btn');
+  btn.className='btn '+(em?'btn-orange':'btn-primary');
+  btn.textContent=em?'🚨 確認急診插刀':'送出排程';
+  checkSlot();
+}
+function checkSlot(){
+  var date=document.getElementById('f-date').value;
+  var orId=parseInt(document.getElementById('f-or').value);
+  var sess=document.getElementById('f-sess').value;
+  var em=document.getElementById('f-em').checked;
+  var banner=document.getElementById('add-banner');banner.innerHTML='';
+  if(!date||!orId)return;
   var or=getOR(orId);
-  if(or&&!or.open){b.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中，無法排程。</div>';return;}
-  var c=schedules.find(function(s){return s.date===d&&s.or===orId&&s.session===sess;});
+  if(or&&!or.open){banner.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中</div>';return;}
+  var c=DATA.schedules.find(function(s){return fmtDate(s.date)===date&&Number(s.or)===orId&&s.session===sess;});
   if(c){
     var dr=getUser(c.doctor);
-    if(isEm){b.innerHTML='<div class="banner banner-orange">🚨 急診模式：此時段有排程（'+(dr?dr.name:'?')+' — '+c.opname+'），插刀後將記錄被擋資訊。</div>';}
-    else{b.innerHTML='<div class="banner banner-warn">⚠️ 此時段已有排程：'+c.opname+'（'+(dr?dr.name:'?')+'），請確認是否衝突。</div>';}
+    if(em)banner.innerHTML='<div class="banner banner-orange">🚨 急診模式：此時段有排程（'+(dr?dr.name:'?')+' — '+c.opname+'），插刀後將記錄被擋資訊。</div>';
+    else banner.innerHTML='<div class="banner banner-warn">⚠️ 此時段已有排程：'+c.opname+'（'+(dr?dr.name:'?')+'）</div>';
   }
 }
-function resetForm(){
-  ['f-date','f-chartno','f-opname','f-note','f-patname'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('f-emergency').checked=false;
-  document.getElementById('add-banners').innerHTML='';
-  toggleEmergencyMode();
+function clearForm(){
+  ['f-date','f-pat','f-chart','f-op','f-note'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-em').checked=false;
+  document.getElementById('add-banner').innerHTML='';
+  onEmToggle();
 }
-
 function submitSchedule(){
-  var date=document.getElementById('f-date').value,orId=parseInt(document.getElementById('f-or').value);
-  var sess=document.getElementById('f-session').value,dur=parseInt(document.getElementById('f-duration').value);
-  var doctor=document.getElementById('f-doctor').value;
-  var opname=document.getElementById('f-opname').value.trim();
-  var isEm=document.getElementById('f-emergency').checked;
-  if(!date||!orId||!opname){showToast('請填寫必要欄位');return;}
-  var or=getOR(orId);if(or&&!or.open){showToast('此刀房目前停用中');return;}
-  // 衝突檢查
-  var conflict=schedules.find(function(s){return s.date===date&&s.or===orId&&s.session===sess;});
-  if(conflict&&!isEm){showToast('此時段已有排程，請開啟急診模式或選其他時段');return;}
-  if(conflict&&isEm){
+  var date=document.getElementById('f-date').value;
+  var orId=parseInt(document.getElementById('f-or').value);
+  var sess=document.getElementById('f-sess').value;
+  var dur=document.getElementById('f-dur').value;
+  var dr=document.getElementById('f-dr').value;
+  var op=document.getElementById('f-op').value.trim();
+  var pat=document.getElementById('f-pat').value.trim();
+  var chart=document.getElementById('f-chart').value.trim();
+  var note=document.getElementById('f-note').value.trim();
+  var em=document.getElementById('f-em').checked;
+  if(!date||!orId||!op){showToast('請填寫日期、刀房、術式名稱');return;}
+  var or=getOR(orId);
+  if(or&&!or.open){showToast('此刀房目前停用中');return;}
+  var conflict=DATA.schedules.find(function(s){return fmtDate(s.date)===date&&Number(s.or)===orId&&s.session===sess;});
+  if(conflict&&!em){showToast('此時段已有排程，請開啟急診模式');return;}
+  if(conflict&&em){
     var cdr=getUser(conflict.doctor);
-    document.getElementById('emergency-conflict-info').innerHTML='<b>被擋醫師：</b>'+(cdr?cdr.name:'?')+' — '+conflict.opname;
-    pendingEmergency={date:date,orId:orId,sess:sess,dur:dur,doctor:doctor,opname:opname,or:or,conflict:conflict,cdr:cdr};
-    openModal('emergency-modal');return;
+    document.getElementById('em-conflict-info').innerHTML='<b>被擋醫師：</b>'+(cdr?cdr.name:'?')+' — '+conflict.opname;
+    pendingEM={date:date,orId:orId,or:or,sess:sess,dur:dur,dr:dr,op:op,pat:pat,chart:chart,note:note,conflict:conflict,cdr:cdr};
+    openModal('em-modal');return;
   }
-  doAddSchedule({date:date,orId:orId,sess:sess,dur:dur,doctor:doctor,opname:opname,or:or,isEm:false});
+  doSubmit({date:date,orId:orId,or:or,sess:sess,dur:dur,dr:dr,op:op,pat:pat,chart:chart,note:note,em:false});
 }
-
 function confirmEmergency(){
-  if(!pendingEmergency)return;
-  var p=pendingEmergency;
-  // 記錄被擋資訊
-  emergencyLogs.push({
-    date:p.date,orName:p.or.name,session:p.sess,
-    emergencyDoctor:getUser(p.doctor)?getUser(p.doctor).name:p.doctor,
-    emergencyOpname:p.opname,
+  var p=pendingEM;
+  // 記錄急診
+  var emLog={date:p.date,orName:p.or.name,session:p.sess,
+    emergencyDoctor:CU.name,emergencyOpname:p.op,
     blockedDoctor:p.cdr?p.cdr.name:p.conflict.doctor,
-    blockedOpname:p.conflict.opname
-  });
-  saveData('emergency_logs',emergencyLogs);
-  doAddSchedule({date:p.date,orId:p.orId,sess:p.sess,dur:p.dur,doctor:p.doctor,opname:p.opname,or:p.or,isEm:true});
-  closeModal('emergency-modal');
-  pendingEmergency=null;
+    blockedOpname:p.conflict.opname};
+  DATA.emergencyLogs.push(emLog);
+  apiSend({action:'addEmergencyLog',date:emLog.date,orName:emLog.orName,session:emLog.session,
+    emergencyDoctor:emLog.emergencyDoctor,emergencyOpname:emLog.emergencyOpname,
+    blockedDoctor:emLog.blockedDoctor,blockedOpname:emLog.blockedOpname});
+  doSubmit({date:p.date,orId:p.orId,or:p.or,sess:p.sess,dur:p.dur,dr:p.dr,op:p.op,pat:p.pat,chart:p.chart,note:p.note,em:true});
+  closeModal('em-modal');pendingEM=null;
 }
-
-function doAddSchedule(p){
+function doSubmit(p){
   var now=new Date();
-  var rec={id:genId(),date:p.date,or:p.orId,session:p.sess,duration:p.dur,
-    doctor:p.doctor,opname:p.opname,
-    chartno:document.getElementById('f-chartno').value.trim(),
-    patname:document.getElementById('f-patname').value.trim(),note:document.getElementById('f-note').value.trim(),
-    emergency:p.isEm,
-    created:toDateStr(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
-    createdBy:currentUser.code};
-  schedules.push(rec);saveData('schedules_v2',schedules);
-  addLog((p.isEm?'🚨 急診插刀：':'新增排程：')+p.opname+'（'+p.date+'，'+p.or.name+' '+p.sess+'）',(p.isEm?'is-emergency':''));
-  showToast(p.isEm?'🚨 急診插刀已記錄':'✓ 排程已新增');
-  resetForm();renderDashboard();renderList();renderStats();
-}
-
-// ══ 刪除排程 ══
-function askDelete(id){
-  var s=schedules.find(function(x){return x.id===id;});
-  if(!s)return;
-  var isAdmin=isAdminRole(currentUser.role);
-  var isOwner=s.createdBy===currentUser.code;
-  if(!isAdmin&&!isOwner){showToast('只有管理員或本人可以刪除');return;}
-  pendingDelete=id;
-  document.getElementById('delete-modal-msg').textContent='確定要刪除「'+s.opname+'」（'+s.date+' '+s.session+'）？';
-  openModal('delete-modal');
-}
-function confirmDelete(){
-  if(!pendingDelete)return;
-  var s=schedules.find(function(x){return x.id===pendingDelete;});
-  schedules=schedules.filter(function(x){return x.id!==pendingDelete;});
-  saveData('schedules_v2',schedules);
-  // 急診刀刪除時，同步清除對應急診記錄
-  if(s&&s.emergency){
-    var dr=getUser(s.doctor);
-    var drName=dr?dr.name:s.doctor;
-    emergencyLogs=emergencyLogs.filter(function(e){
-      return !(e.date===s.date && e.session===s.session && e.emergencyDoctor===drName && e.emergencyOpname===s.opname);
-    });
-    saveData('emergency_logs',emergencyLogs);
-  }
-  addLog('刪除排程 ID：'+pendingDelete,'is-close');
-  showToast('✓ 已刪除');
-  closeModal('delete-modal');pendingDelete=null;
+  var id='s'+now.getTime();
+  var rec={id:id,date:p.date,or:p.orId,session:p.sess,duration:p.dur,doctor:p.dr,
+    opname:p.op,patname:p.pat,chartno:p.chart,note:p.note,emergency:p.em,
+    created:fmtDate(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),createdBy:CU.code};
+  DATA.schedules.push(rec);
+  // 送到 Sheets
+  apiSend({action:'addSchedule',date:p.date,or:p.orId,session:p.sess,duration:p.dur,
+    doctor:p.dr,opname:p.op,patname:p.pat,chartno:p.chart,note:p.note,
+    emergency:p.em?'true':'false',createdBy:CU.code});
+  showToast(p.em?'🚨 急診插刀已記錄':'✓ 排程已新增');
+  clearForm();
   renderDashboard();renderList();renderStats();
+  // 更新刀表日期到新排程日期
+  document.getElementById('dash-date').value=p.date;
 }
 
 // ══ 排程列表 ══
 function renderList(){
-  schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
-  users     = loadData('users_v2', DEFAULT_USERS);
-  var df=document.getElementById('filter-doctor').value,p=document.getElementById('filter-period').value;
+  var df=document.getElementById('flt-dr').value;
+  var period=document.getElementById('flt-period').value;
   var now=new Date();
-  var f=schedules.filter(function(s){
+  var f=DATA.schedules.filter(function(s){
     if(df&&s.doctor!==df)return false;
-    var d=new Date(normDate(s.date));
-    if(p==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
-    if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-    if(p==='year')return d.getFullYear()===now.getFullYear();
+    var d=new Date(fmtDate(s.date));
+    if(period==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
+    if(period==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(period==='year')return d.getFullYear()===now.getFullYear();
     return true;
-  }).sort(function(a,b){var da=normDate(a.date),db=normDate(b.date);return da>db?1:da<db?-1:0;});
-  var isAdmin=isAdminRole(currentUser.role);
+  }).sort(function(a,b){var da=fmtDate(a.date),db=fmtDate(b.date);return da>db?1:da<db?-1:0;});
+  var admin=isAdmin(CU);
   var html='';
-  if(isMobile()){
-    if(!f.length){html='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';}
-    else f.forEach(function(s){
+  if(!f.length){html='<div style="padding:20px;text-align:center;color:var(--text-3)">此期間沒有排程</div>';}
+  else{
+    html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:36px"></span></div>';
+    f.forEach(function(s){
       var dr=getUser(s.doctor),or=getOR(s.or);
-      var canDel=isAdmin||(s.createdBy===currentUser.code);
-      var bg=s.emergency?'var(--orange-bg)':'var(--surface)';
-      var bc=s.emergency?'1px solid var(--orange-border)':'1px solid var(--border)';
-      html+='<div style="background:'+bg+';border:'+bc+';border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px">'
-        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
-        +'<div style="flex:1;min-width:0">'
-        +'<div style="font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-        +'<div style="font-size:12px;color:var(--text-2);margin-bottom:2px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
-        +'<div style="font-size:11px;color:var(--text-3)">'+dispDate(s.date)+' '+s.session+' · '+(or?or.name:'?')+'</div>'
-        +'</div>'
-        +(canDel?'<button style="flex-shrink:0;background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:4px 10px;font-size:12px;cursor:pointer" onclick="askDelete(\''+s.id+'\')">刪除</button>':'')
-        +'</div></div>';
-    });
-  } else {
-    html='<div class="list-header"><span class="col-wide">術式</span><span class="col">醫師</span><span class="col">日期</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:32px"></span></div>';
-    if(!f.length)html+='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';
-    else f.forEach(function(s){
-      var dr=getUser(s.doctor),or=getOR(s.or);
-      var canDel=isAdmin||(s.createdBy===currentUser.code);
+      var canDel=admin||(s.createdBy===CU.code);
       html+='<div class="list-row">'
-        +'<div class="col-wide" style="font-weight:500">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+        +'<div class="col-xl"><div style="font-weight:600">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+        +(s.patname||s.chartno?'<div style="font-size:12px;color:var(--text-3)">'+(s.patname?'👤 '+s.patname:'')+(s.chartno?' #'+s.chartno:'')+'</div>':'')
+        +'</div>'
         +'<div class="col">'+(dr?dr.name:'?')+'</div>'
-        +'<div class="col">'+dispDate(s.date)+' '+s.session+'</div>'
+        +'<div class="col">'+dispDate(s.date)+'<br><span style="font-size:12px">'+s.session+'</span></div>'
         +'<div class="col">'+(or?or.name:'?')+'</div>'
         +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
-        +'<div style="width:32px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:12px" onclick="askDelete(\''+s.id+'\')">✕</button>':'')+'</div>'
+        +'<div style="width:36px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:3px 8px" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">✕</button>':'')+'</div>'
         +'</div>';
     });
   }
   document.getElementById('list-body').innerHTML=html;
 }
-
+function askDel(id,name){
+  pendingDel=id;
+  document.getElementById('del-modal-msg').textContent='確定要刪除「'+name+'」？';
+  openModal('del-modal');
+}
+function confirmDel(){
+  if(!pendingDel)return;
+  var s=DATA.schedules.find(function(x){return x.id===pendingDel;});
+  DATA.schedules=DATA.schedules.filter(function(x){return x.id!==pendingDel;});
+  if(s&&s.emergency){
+    var dr=getUser(s.doctor);
+    DATA.emergencyLogs=DATA.emergencyLogs.filter(function(e){
+      return !(fmtDate(e.date)===fmtDate(s.date)&&e.session===s.session&&e.emergencyDoctor===(dr?dr.name:s.doctor)&&e.emergencyOpname===s.opname);
+    });
+    apiSend({action:'deleteEmergencyLog',date:fmtDate(s.date),session:s.session,
+      emergencyDoctor:dr?dr.name:s.doctor,emergencyOpname:s.opname});
+  }
+  apiSend({action:'deleteSchedule',id:pendingDel,actor:CU.code});
+  showToast('✓ 已刪除');
+  closeModal('del-modal');pendingDel=null;
+  renderDashboard();renderList();renderStats();
+}
 function exportCSV(){
-  var p=document.getElementById('filter-period').value,df=document.getElementById('filter-doctor').value;
+  var period=document.getElementById('flt-period').value;
+  var df=document.getElementById('flt-dr').value;
   var now=new Date();
-  var f=schedules.filter(function(s){
+  var f=DATA.schedules.filter(function(s){
     if(df&&s.doctor!==df)return false;
-    var d=new Date(normDate(s.date));
-    if(p==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
-    if(p==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
-    if(p==='year')return d.getFullYear()===now.getFullYear();
+    var d=new Date(fmtDate(s.date));
+    if(period==='week'){var sw=new Date(now);sw.setDate(now.getDate()-now.getDay());var ew=new Date(sw);ew.setDate(sw.getDate()+6);return d>=sw&&d<=ew;}
+    if(period==='month')return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(period==='year')return d.getFullYear()===now.getFullYear();
     return true;
   });
-  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病歷號','病患姓名','預估時間(hr)','類型','備註']];
-  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([s.date,s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.chartno||'',s.patname||'',s.duration,s.emergency?'急診':'一般',s.note]);});
+  var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病患姓名','病歷號','預估時間(hr)','類型','備註']];
+  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([fmtDate(s.date),s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.patname||'',s.chartno||'',s.duration,s.emergency?'急診':'一般',s.note||'']);});
   var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='手術排程_'+toDateStr(now)+'.csv';a.click();URL.revokeObjectURL(url);
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='手術排程_'+today()+'.csv';a.click();
   showToast('✓ CSV 已下載');
 }
 
-// ══ 目標台數 ══
-function saveTargets(){
-  var m=document.getElementById('target-month').value;
-  var y=document.getElementById('target-year').value;
-  if(m) localStorage.setItem('targetMonth', m);
-  if(y) localStorage.setItem('targetYear', y);
-  renderStats();
-  showToast('✓ 目標台數已儲存');
-}
-
 // ══ 統計 ══
-function renderStats(){
-  schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
-  users     = loadData('users_v2', DEFAULT_USERS);
-  ors       = loadData('ors_v2', DEFAULT_ORS);
-  var now=new Date();
-  var mo=schedules.filter(function(s){var d=new Date(normDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
-  var yr=schedules.filter(function(s){return new Date(normDate(s.date)).getFullYear()===now.getFullYear();});
-  var moEm=mo.filter(function(s){return s.emergency;});
-  var tMonth = parseInt(localStorage.getItem('targetMonth')||'80');
-  var tYear  = parseInt(localStorage.getItem('targetYear')||'800');
-  document.getElementById('target-month').value = tMonth;
-  document.getElementById('target-year').value  = tYear;
-  document.getElementById('stat-grid-2').innerHTML=
-    sc('本月手術總數','color:var(--text)',mo.length,'目標 '+tMonth+' 台')+
-    sc('本年累計','color:var(--blue)',yr.length,'目標 '+tYear+' 台')+
-    sc('本月急診插刀','color:var(--orange)',moEm.length,'台')+
-    sc('醫師人數','color:var(--purple)',users.filter(function(u){return u.role==='doctor';}).length,'位醫師');
-
-  var drs=users.filter(function(u){return u.role==='doctor';});
-  var mx=Math.max.apply(null,drs.map(function(d){return mo.filter(function(s){return s.doctor===d.code;}).length;}).concat([0]));
-  document.getElementById('doctor-bars').innerHTML=drs.map(function(dr){
-    var c=mo.filter(function(s){return s.doctor===dr.code;}).length;
-    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+dr.name+'</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mx?Math.round(c/mx*100):0)+'%"></div></div></div>';
-  }).join('');
-
-  var openOrs=ors.filter(function(o){return o.open;});
-  var mo2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return s.or===o.id;}).length;}).concat([0]));
-  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){
-    var c=mo.filter(function(s){return s.or===or.id;}).length;
-    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+or.name+'</span><span style="color:var(--text-3)">'+c+' 台</span></div><div class="bar-track"><div class="bar-fill" style="width:'+(mo2?Math.round(c/mo2*100):0)+'%"></div></div></div>';
-  }).join('');
-
-  // 被擋刀統計
-  var moEmLogs=emergencyLogs.filter(function(e){var d=new Date(normDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
-  var blockedCount={};
-  moEmLogs.forEach(function(e){blockedCount[e.blockedDoctor]=(blockedCount[e.blockedDoctor]||0)+1;});
-  var blockedArr=Object.keys(blockedCount).map(function(k){return{name:k,count:blockedCount[k]};}).sort(function(a,b){return b.count-a.count;});
-  var mbx=blockedArr.length?blockedArr[0].count:0;
-  document.getElementById('blocked-bars').innerHTML=blockedArr.length?blockedArr.map(function(b){
-    return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+b.name+'</span><span style="color:var(--orange);font-weight:600">被擋 '+b.count+' 次</span></div><div class="bar-track"><div class="bar-fill bar-fill-orange" style="width:'+(mbx?Math.round(b.count/mbx*100):0)+'%"></div></div></div>';
-  }).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
-
-  var detail=moEmLogs.slice(0,5).map(function(e){return dispDate(e.date)+' '+e.orName+' — '+e.blockedDoctor+' 被 '+e.emergencyDoctor+' 插刀';}).join('　');
-  document.getElementById('blocked-detail').textContent=detail;
+function saveTargets(){
+  localStorage.setItem('tgt-month',document.getElementById('tgt-month').value||'80');
+  localStorage.setItem('tgt-year',document.getElementById('tgt-year').value||'800');
+  renderStats();showToast('✓ 目標已儲存');
 }
+function renderStats(){
+  var now=new Date();
+  var tm=parseInt(localStorage.getItem('tgt-month')||'80');
+  var ty=parseInt(localStorage.getItem('tgt-year')||'800');
+  document.getElementById('tgt-month').value=tm;
+  document.getElementById('tgt-year').value=ty;
+  var mo=DATA.schedules.filter(function(s){var d=new Date(fmtDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var yr=DATA.schedules.filter(function(s){return new Date(fmtDate(s.date)).getFullYear()===now.getFullYear();});
+  var moEm=mo.filter(function(s){return s.emergency;});
+  document.getElementById('stat-grid-2').innerHTML=
+    sc('本月手術總數','--text',mo.length,'目標 '+tm+' 台')+
+    sc('本年累計','--blue',yr.length,'目標 '+ty+' 台')+
+    sc('本月急診插刀','--orange',moEm.length,'台')+
+    sc('醫師人數','--purple',DATA.users.filter(function(u){return!isAdmin(u);}).length,'位醫師');
+  var drs=DATA.users.filter(function(u){return!isAdmin(u);});
+  var mx=Math.max.apply(null,drs.map(function(d){return mo.filter(function(s){return s.doctor===d.code;}).length;}).concat([0]));
+  document.getElementById('dr-bars').innerHTML=drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return bar(dr.name+' ('+dr.code+')',c,mx,'');}).join('');
+  var openOrs=DATA.ors.filter(function(o){return o.open;});
+  var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return Number(s.or)===o.id;}).length;}).concat([0]));
+  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return Number(s.or)===or.id;}).length;return bar(or.name,c,mx2,'');}).join('');
+  var moEmLogs=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var bc={};moEmLogs.forEach(function(e){bc[e.blockedDoctor]=(bc[e.blockedDoctor]||0)+1;});
+  var ba=Object.keys(bc).map(function(k){return{name:k,count:bc[k]};}).sort(function(a,b){return b.count-a.count;});
+  var mx3=ba.length?ba[0].count:0;
+  document.getElementById('blocked-bars').innerHTML=ba.length?ba.map(function(b){return bar(b.name,b.count,mx3,' style="background:var(--orange)"');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
+}
+function bar(name,count,max,style){var pct=max?Math.round(count/max*100):0;return '<div class="bar-wrap" style="margin-bottom:14px"><div class="bar-top"><span style="font-weight:500">'+name+'</span><span style="color:var(--text-3)">'+count+' 台</span></div><div class="bar-track"><div class="bar-fill'+style+'" style="width:'+pct+'%"></div></div></div>';}
 
 // ══ 刀房管理 ══
-var DAYS=[{d:1,n:'週一'},{d:2,n:'週二'},{d:3,n:'週三'},{d:4,n:'週四'},{d:5,n:'週五'},{d:6,n:'週六'},{d:0,n:'週日'}];
-
-function showAddORModal(){document.getElementById('new-or-name').value='';openModal('add-or-modal');}
+function renderAdmin(){
+  if(!isAdmin(CU))return;
+  var list=document.getElementById('or-admin-list');list.innerHTML='';
+  DATA.ors.forEach(function(or){list.appendChild(buildORBlock(or));});
+  var logHtml='';
+  DATA.logs.slice(0,20).forEach(function(l){
+    logHtml+='<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);font-size:12px">'
+      +'<span style="color:var(--text-3);min-width:100px;flex-shrink:0">'+l.time+'</span>'
+      +'<span style="font-weight:600;min-width:60px;flex-shrink:0">'+l.actor+'</span>'
+      +'<span style="color:var(--text-2)">'+l.msg+'</span></div>';
+  });
+  document.getElementById('log-list').innerHTML=logHtml||'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無記錄</div>';
+}
+function buildORBlock(or){
+  var block=document.createElement('div');
+  block.className='or-admin-block'+(or.open?'':' closed');
+  var hdr=document.createElement('div');hdr.className='or-admin-header';
+  var num=document.createElement('div');num.style.cssText='width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;background:'+(or.open?'var(--green-bg)':'var(--gray-bg)')+';color:'+(or.open?'var(--green)':'var(--text-3)');num.textContent=or.id;
+  var nw=document.createElement('div');nw.style.flex='1';
+  var ns=document.createElement('span');ns.className='or-name-display';ns.textContent=or.name;ns.title='點擊修改名稱';ns.onclick=function(){startEditName(or.id,nw,ns);};
+  var nh=document.createElement('div');nh.style.cssText='font-size:11px;color:var(--text-3);margin-top:2px';nh.textContent='點擊名稱可修改';
+  nw.append(ns,nh);
+  var sb=document.createElement('span');sb.className='badge '+(or.open?'badge-green':'badge-gray');sb.textContent=or.open?'開放中':'停用中';
+  var tg=document.createElement('label');tg.className='toggle';
+  tg.innerHTML='<input type="checkbox" '+(or.open?'checked':'')+'><span class="toggle-slider"></span>';
+  tg.querySelector('input').addEventListener('change',function(e){if(!e.target.checked){showClosePanel(or.id,block);e.target.checked=true;}else reopenOR(or.id);});
+  var delBtn=document.createElement('button');delBtn.className='btn btn-danger btn-sm';delBtn.textContent='刪除';
+  delBtn.onclick=function(){
+    var hasSched=DATA.schedules.find(function(s){return Number(s.or)===or.id;});
+    if(hasSched){showToast('此刀房尚有排程記錄，無法刪除');return;}
+    if(!confirm('確定要刪除「'+or.name+'」？'))return;
+    DATA.ors=DATA.ors.filter(function(o){return o.id!==or.id;});
+    apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});
+    showToast('✓ 刀房已刪除');renderAdmin();populateORSelect();renderDashboard();
+  };
+  hdr.append(num,nw,sb,tg,delBtn);block.appendChild(hdr);
+  if(!or.open&&or.reason){var cb=document.createElement('div');cb.className='banner banner-warn';cb.style.marginBottom='12px';cb.textContent='🔒 停用中：'+or.reason+(or.until?' — 至 '+dispDate(or.until):'');block.appendChild(cb);}
+  // 週時段
+  var wl=document.createElement('div');wl.style.cssText='font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:4px';wl.textContent='每週固定時段';
+  var wg=document.createElement('div');wg.className='week-grid';
+  DAYS.forEach(function(day){
+    var col=document.createElement('div');col.className='day-col';
+    col.innerHTML='<div class="day-name">'+day.n+'</div>';
+    var ab=document.createElement('button');ab.className='sess-btn '+(or.sched&&or.sched[day.d]&&or.sched[day.d][0]?'am-on':'')+(or.open?'':' locked');ab.textContent='上午';
+    ab.onclick=function(){or.sched=or.sched||{};or.sched[day.d]=or.sched[day.d]||[0,0];or.sched[day.d][0]=or.sched[day.d][0]?0:1;ab.className='sess-btn '+(or.sched[day.d][0]?'am-on':'')+(or.open?'':' locked');};
+    var pb=document.createElement('button');pb.className='sess-btn '+(or.sched&&or.sched[day.d]&&or.sched[day.d][1]?'pm-on':'')+(or.open?'':' locked');pb.textContent='下午';
+    pb.onclick=function(){or.sched=or.sched||{};or.sched[day.d]=or.sched[day.d]||[0,0];or.sched[day.d][1]=or.sched[day.d][1]?0:1;pb.className='sess-btn '+(or.sched[day.d][1]?'pm-on':'')+(or.open?'':' locked');};
+    col.append(ab,pb);wg.appendChild(col);
+  });
+  block.append(wl,wg);
+  // 停用表單
+  var cp=document.createElement('div');cp.className='close-panel';cp.id='cp-'+or.id;
+  cp.innerHTML='<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--red)">設定停用</div>'
+    +'<div class="form-grid" style="margin-bottom:10px">'
+    +'<div class="form-group"><label>停用原因</label><select id="cr-'+or.id+'"><option>設備維修</option><option>環境清潔</option><option>器材送修</option><option>臨時徵用</option><option>其他</option></select></div>'
+    +'<div class="form-group"><label>停用至</label><input type="date" id="cu-'+or.id+'"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end">'
+    +'<button class="btn btn-secondary btn-sm" onclick="document.getElementById(\'cp-'+or.id+'\').classList.remove(\'show\')">取消</button>'
+    +'<button class="btn btn-danger btn-sm" onclick="confirmClose('+or.id+')">確認停用</button>'
+    +'</div>';
+  block.appendChild(cp);
+  // 儲存按鈕
+  var ar=document.createElement('div');ar.style.cssText='display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)';
+  var sv=document.createElement('button');sv.className='btn btn-primary btn-sm';sv.textContent='✓ 儲存設定';
+  sv.onclick=function(){apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});showToast('✓ 設定已儲存');};
+  ar.appendChild(sv);block.appendChild(ar);
+  return block;
+}
+function startEditName(id,wrap,ns){
+  var or=DATA.ors.find(function(o){return o.id===id;});
+  var inp=document.createElement('input');inp.className='or-name-input';inp.value=or.name;inp.maxLength=20;
+  var btn=document.createElement('button');btn.className='btn btn-primary btn-sm';btn.style.marginTop='4px';btn.textContent='確認';
+  function save(){var n=inp.value.trim();if(n&&n!==or.name){or.name=n;apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});showToast('✓ 名稱已更新');populateORSelect();renderDashboard();}renderAdmin();}
+  inp.onblur=save;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderAdmin();};
+  btn.onclick=function(){inp.blur();};
+  wrap.innerHTML='';wrap.append(inp,btn);inp.focus();
+}
+function showClosePanel(id,block){block.querySelector('#cp-'+id).classList.add('show');}
+function confirmClose(id){
+  var or=DATA.ors.find(function(o){return o.id===id;});
+  or.open=false;or.reason=document.getElementById('cr-'+id).value;or.until=document.getElementById('cu-'+id).value;
+  apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});
+  showToast('✓ 已停用 '+or.name);renderAdmin();renderDashboard();populateORSelect();
+}
+function reopenOR(id){
+  var or=DATA.ors.find(function(o){return o.id===id;});
+  or.open=true;or.reason='';or.until='';
+  apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});
+  showToast('✓ 已開放 '+or.name);renderAdmin();renderDashboard();populateORSelect();
+}
+function openAddOR(){document.getElementById('new-or-name').value='';openModal('add-or-modal');}
 function confirmAddOR(){
   var name=document.getElementById('new-or-name').value.trim();
   if(!name){showToast('請輸入刀房名稱');return;}
-  var newId=Math.max.apply(null,ors.map(function(o){return o.id;}).concat([0]))+1;
-  var newOR={id:newId,name:name,open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[1,1],4:[1,1],5:[1,1],6:[0,0],0:[0,0]}};
-  ors.push(newOR);saveData('ors_v2',ors);
-  addLog('新增刀房：'+name,'is-edit');
-  showToast('✓ 刀房已新增');
-  closeModal('add-or-modal');
-  renderAdminOR();populateORSelect();renderDashboard();
+  var newId=Math.max.apply(null,DATA.ors.map(function(o){return o.id;}).concat([0]))+1;
+  DATA.ors.push({id:newId,name:name,open:true,reason:'',until:'',sched:{1:[1,1],2:[1,1],3:[1,1],4:[1,1],5:[1,1],6:[0,0],0:[0,0]}});
+  apiSend({action:'saveOR',ors:encodeURIComponent(JSON.stringify(DATA.ors)),actor:CU.code});
+  showToast('✓ 刀房已新增');closeModal('add-or-modal');renderAdmin();populateORSelect();renderDashboard();
 }
 
-function askDeleteOR(id){
-  var or=getOR(id);if(!or)return;
-  var hasSched=schedules.find(function(s){return s.or===id;});
-  if(hasSched){showToast('此刀房尚有排程記錄，無法刪除');return;}
-  pendingDelete='OR_'+id;
-  document.getElementById('delete-modal-msg').textContent='確定要刪除刀房「'+or.name+'」？';
-  openModal('delete-modal');
-}
-// override confirmDelete 支援刀房刪除
-var _origConfirmDelete=confirmDelete;
-confirmDelete=function(){
-  if(pendingDelete&&String(pendingDelete).indexOf('OR_')===0){
-    var orId=parseInt(String(pendingDelete).replace('OR_',''));
-    var or=getOR(orId);
-    ors=ors.filter(function(o){return o.id!==orId;});
-    saveData('ors_v2',ors);
-    addLog('刪除刀房：'+(or?or.name:''),'is-close');
-    showToast('✓ 刀房已刪除');
-    closeModal('delete-modal');pendingDelete=null;
-    renderAdminOR();populateORSelect();renderDashboard();
-  } else {
-    _origConfirmDelete();
-  }
-};
-
-function renderAdminOR(){
-  if(currentUser.role!=='admin')return;
-  var l=document.getElementById('or-admin-list');l.innerHTML='';
-  ors.forEach(function(or){l.appendChild(buildORBlock(or));});
-}
-function buildORBlock(or){
-  var block=document.createElement('div');block.className='or-block'+(or.open?'':' is-closed');
-  var hdr=document.createElement('div');hdr.className='or-block-header';
-  var nb=document.createElement('div');nb.className='or-num-badge '+(or.open?'or-num-open':'or-num-closed');nb.textContent=or.id;
-  var nw=document.createElement('div');nw.className='or-name-wrap';nw.id='namewrap-'+or.id;renderNameDisplay(or,nw);
-  var sb=document.createElement('span');sb.className='badge '+(or.open?'badge-green':'badge-gray');sb.textContent=or.open?'開放中':'停用中';
-  var tg=document.createElement('label');tg.className='toggle';tg.innerHTML='<input type="checkbox" '+(or.open?'checked':'')+'><span class="toggle-slider"></span>';
-  tg.querySelector('input').addEventListener('change',function(e){if(!e.target.checked){showClosePanel(or.id,block);e.target.checked=true;}else reopenOR(or.id);});
-  var delBtn=document.createElement('button');delBtn.className='btn btn-danger btn-sm';delBtn.textContent='刪除';delBtn.onclick=function(){askDeleteOR(or.id);};
-  hdr.append(nb,nw,sb,tg,delBtn);block.appendChild(hdr);
-  if(!or.open&&or.reason){var ci=document.createElement('div');ci.className='banner banner-warn';ci.style.marginBottom='12px';ci.innerHTML='🔒 停用中：'+or.reason+(or.until?' — 至 '+or.until.replace(/\d{4}-/,'').replace('-','/'):'');block.appendChild(ci);}
-  var ws=document.createElement('div');ws.className='week-section';
-  var wl=document.createElement('div');wl.className='week-label';wl.textContent='每週固定時段';
-  var wg=document.createElement('div');wg.className='week-grid';
-  DAYS.forEach(function(day){
-    var col=document.createElement('div');col.className='day-col';col.innerHTML='<div class="day-name">'+day.n+'</div>';
-    var ab=document.createElement('button');ab.className='sess-btn '+(or.sched[day.d][0]?'am-on':'')+(or.open?'':' locked');ab.textContent='上午';ab.onclick=function(){toggleSess(or.id,day.d,0,ab);};
-    var pb=document.createElement('button');pb.className='sess-btn '+(or.sched[day.d][1]?'pm-on':'')+(or.open?'':' locked');pb.textContent='下午';pb.onclick=function(){toggleSess(or.id,day.d,1,pb);};
-    col.append(ab,pb);wg.appendChild(col);
-  });
-  ws.append(wl,wg);block.appendChild(ws);
-  // 停用表單
-  var cp=document.createElement('div');cp.className='close-form-panel';cp.id='closepanel-'+or.id;
-  cp.innerHTML='<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--red)">設定停用</div><div class="form-grid" style="margin-bottom:10px"><div class="form-group"><label>停用原因</label><select id="reason-'+or.id+'"><option>設備維修</option><option>環境清潔</option><option>器材送修</option><option>臨時徵用</option><option>其他</option></select></div><div class="form-group"><label>停用至</label><input type="date" id="until-'+or.id+'"></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary btn-sm" onclick="hideClosePanel('+or.id+')">取消</button><button class="btn btn-danger btn-sm" onclick="confirmClose('+or.id+')">確認停用</button></div>';
-  block.appendChild(cp);
-  var ar=document.createElement('div');ar.style.cssText='display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-light)';
-  var sv=document.createElement('button');sv.className='btn btn-primary btn-sm';sv.innerHTML='✓ 儲存設定';sv.onclick=function(){saveOR(or.id);};ar.appendChild(sv);block.appendChild(ar);
-  return block;
-}
-function renderNameDisplay(or,wrap){wrap.innerHTML='';var s=document.createElement('span');s.className='or-name-display';s.textContent=or.name;s.title='點擊修改';s.onclick=function(){startEditName(or.id,wrap);};var h=document.createElement('div');h.className='edit-hint';h.textContent='點擊名稱可修改';wrap.append(s,h);}
-function startEditName(id,wrap){var or=getOR(id);wrap.innerHTML='';var inp=document.createElement('input');inp.className='or-name-input';inp.value=or.name;inp.maxLength=20;inp.onblur=function(){saveNameEdit(id,inp.value,wrap);};inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderNameDisplay(or,wrap);};var btn=document.createElement('button');btn.className='btn btn-primary btn-sm';btn.style.marginTop='4px';btn.textContent='確認';btn.onclick=function(){saveNameEdit(id,inp.value,wrap);};wrap.append(inp,btn);inp.focus();}
-function saveNameEdit(id,n,wrap){n=n.trim();var or=getOR(id);if(!n){renderNameDisplay(or,wrap);return;}if(n!==or.name){or.name=n;saveData('ors_v2',ors);addLog('修改刀房名稱為「'+n+'」','is-edit');showToast('✓ 名稱已更新');populateORSelect();renderDashboard();}renderNameDisplay(or,wrap);}
-function toggleSess(orId,day,sess,btn){var or=getOR(orId);if(!or.open)return;or.sched[day][sess]=or.sched[day][sess]?0:1;btn.className='sess-btn '+(or.sched[day][sess]?(sess===0?'am-on':'pm-on'):'');}
-function showClosePanel(id){document.getElementById('closepanel-'+id).classList.add('show');}
-function hideClosePanel(id){document.getElementById('closepanel-'+id).classList.remove('show');}
-function confirmClose(id){var or=getOR(id);or.open=false;or.reason=document.getElementById('reason-'+id).value;or.until=document.getElementById('until-'+id).value;saveData('ors_v2',ors);addLog('停用 '+or.name,'is-close');showToast('✓ 已停用 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
-function reopenOR(id){var or=getOR(id);or.open=true;or.reason='';or.until='';saveData('ors_v2',ors);addLog('重新開放 '+or.name,'is-open');showToast('✓ 已開放 '+or.name);renderAdminOR();renderDashboard();populateORSelect();}
-function saveOR(id){saveData('ors_v2',ors);addLog('儲存 '+getOR(id).name+' 時段設定','is-edit');showToast('✓ 設定已儲存');}
-function renderLogs(){var html='';logs.slice(0,20).forEach(function(l){html+='<div class="log-item"><div class="log-time">'+l.time+'</div><div class="log-actor">'+l.actor+'</div><div class="log-msg '+l.type+'">'+l.msg+'</div></div>';});var el=document.getElementById('log-list');if(el)el.innerHTML=html||'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無記錄</div>';}
-
-// ══ 串接 ══
-function saveSheetURL(){var url=document.getElementById('sheets-url-input').value.trim();if(!url){showToast('請輸入網址');return;}SHEETS_URL=url;localStorage.setItem('sheetsUrl',url);document.getElementById('sheets-connected').style.display='block';showToast('✓ 網址已儲存');}
-function testConnection(){var r=document.getElementById('test-result');if(!SHEETS_URL){r.textContent='⚠️ 請先輸入網址';r.style.color='var(--amber)';return;}r.textContent='測試中…';r.style.color='var(--text-3)';fetch(SHEETS_URL+'?action=ping').then(function(res){return res.json();}).then(function(d){if(d.status==='ok'){r.textContent='✓ 連線成功！';r.style.color='var(--green)';}else{r.textContent='連線失敗：'+JSON.stringify(d);r.style.color='var(--red)';}}).catch(function(e){r.textContent='連線失敗：'+e.message;r.style.color='var(--red)';});}
+// ══ 串接設定 ══
+function saveURL(){var url=document.getElementById('sheets-url-input').value.trim();if(!url){showToast('請輸入網址');return;}SHEETS_URL=url;document.getElementById('url-connected').style.display='block';showToast('✓ 網址已儲存');}
+function testConn(){var r=document.getElementById('conn-result');r.textContent='測試中…';r.style.color='var(--text-3)';apiGet({action:'ping'},function(d){if(d.status==='ok'){r.textContent='✓ 連線成功！';r.style.color='var(--green)';}else{r.textContent='連線失敗：'+d.message;r.style.color='var(--red)';}});}
 
 // ══ 頁面切換 ══
 var PAGE_TITLES={dashboard:'今日刀表',add:'新增排程',list:'排程列表',stats:'統計報表',admin:'刀房管理',setup:'串接設定'};
-
-function updateMobileNav(id) {
-  ['dashboard','add','list','stats','admin'].forEach(function(p) {
-    var btn = document.getElementById('mnav-'+p);
-    if(btn) btn.classList.toggle('active', p===id);
-  });
-  var title = PAGE_TITLES[id]||id;
-  var mt = document.getElementById('mobile-topbar-title');
-  if(mt) mt.textContent = title;
-}
-
-function showPage(id,btn){
-  if(id==='admin'&&currentUser.role!=='admin'){showToast('僅限管理員使用');return;}
+function goPage(id,btn){
+  if(id==='admin'&&!isAdmin(CU)){showToast('僅限管理員使用');return;}
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(b){b.classList.remove('active');});
   document.getElementById('page-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
-  document.getElementById('topbar-title').textContent=PAGE_TITLES[id]||id;
+  var t=PAGE_TITLES[id]||id;
+  document.getElementById('topbar-title').textContent=t;
+  document.getElementById('mob-title').textContent=t;
   if(id==='list')renderList();
   if(id==='stats')renderStats();
-  if(id==='admin'){renderAdminOR();renderLogs();}
+  if(id==='admin')renderAdmin();
   if(id==='dashboard')renderDashboard();
 }
-</script>
-</body>
-</html>
-<!-- sync layer: GET-based Sheets API -->
-<script>
-// ══ 工具：把物件轉成 URL query string ══
-function toQS(obj) {
-  return Object.keys(obj).map(function(k) {
-    return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]);
-  }).join('&');
-}
-
-// ══ 通用 GET 請求（有回傳值）══
-function apiGet(params, callback) {
-  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
-  var url = SHEETS_URL + '?' + toQS(params);
-  fetch(url, {redirect:'follow'})
-    .then(function(r) { return r.text(); })
-    .then(function(text) {
-      try {
-        var d = JSON.parse(text);
-        if(callback) callback(d);
-      } catch(e) {
-        // Google redirect 有時會回傳 HTML，嘗試再抓一次
-        fetch(url, {redirect:'follow', mode:'cors'})
-          .then(function(r2){ return r2.json(); })
-          .then(function(d2){ if(callback) callback(d2); })
-          .catch(function(){ if(callback) callback({status:'error', message:'parse error'}); });
-      }
-    })
-    .catch(function(e) { if(callback) callback({status:'error', message:e.toString()}); });
-}
-
-// ══ 通用 GET 請求（不需回傳，fire-and-forget）══
-function apiSend(params) {
-  if (!SHEETS_URL) return;
-  var url = SHEETS_URL + '?' + toQS(params);
-  fetch(url).catch(function(){});
-}
-
-// ══ 啟動時從 Sheets 載入所有資料 ══
-function loadFromSheets(callback) {
-  if (!SHEETS_URL) { if(callback) callback(); return; }
-  var overlay = document.getElementById('loading-overlay');
-  if(overlay) overlay.style.display='flex';
-  apiGet({action:'getAll'}, function(data) {
-    if(overlay) overlay.style.display='none';
-    if (!data || data.status !== 'ok') {
-      showToast('⚠️ 無法連線 Sheets，使用本地資料');
-      if(callback) callback(); return;
-    }
-    // 更新使用者
-    if (data.users && data.users.length) {
-      var sheetsUsers = data.users;
-      // 確保本地 admin 帳號永遠保留
-      var localAdmins = loadData('users_v2', DEFAULT_USERS).filter(function(u){ return isAdminRole(u.role); });
-      localAdmins.forEach(function(a){
-        var exists = sheetsUsers.find(function(u){ return u.code.toLowerCase()===a.code.toLowerCase(); });
-        if(!exists) sheetsUsers.push(a);
-        else {
-          // Sheets 有 admin 但角色名稱可能是中文，統一修正
-          exists.role = 'admin';
-        }
-      });
-      users = sheetsUsers;
-      saveData('users_v2', users);
-    }
-    // 更新排程
-    if (data.schedules && data.schedules.length >= 0) {
-      schedules = data.schedules.map(function(s){
-        s.date = normDate(s.date);
-        return s;
-      });
-      saveData('schedules_v2', schedules);
-    }
-    // 更新刀房（強制覆蓋）
-    if (data.ors && data.ors.length > 0) {
-      ors = data.ors;
-      saveData('ors_v2', ors);
-    }
-    // 更新急診記錄
-    if (data.emergencyLogs) {
-      emergencyLogs = data.emergencyLogs;
-      saveData('emergency_logs', emergencyLogs);
-    }
-    showToast('✓ 資料已同步');
-    if(callback) callback();
+function syncMobNav(id){
+  ['dashboard','add','list','stats','admin'].forEach(function(p){
+    var b=document.getElementById('mn-'+p);if(b)b.classList.toggle('active',p===id);
   });
 }
 
-// ══ 覆寫 doAddSchedule ══
-var _origDoAdd = doAddSchedule;
-doAddSchedule = function(p) {
-  // 先把欄位值存起來，因為 _origDoAdd 會清空表單
-  var chartno = document.getElementById('f-chartno').value.trim();
-  var patname = document.getElementById('f-patname').value.trim();
-  var note    = document.getElementById('f-note').value.trim();
-  _origDoAdd(p);
-  if (SHEETS_URL) {
-    apiSend({
-      action:    'addSchedule',
-      date:      p.date,
-      or:        p.orId,
-      session:   p.sess,
-      duration:  p.dur,
-      doctor:    p.doctor,
-      opname:    p.opname,
-      chartno:   chartno,
-      patname:   patname,
-      note:      note,
-      emergency: p.isEm ? 'true' : 'false',
-      createdBy: currentUser.code
-    });
-  }
-};
-
-// ══ 覆寫 confirmDelete ══
-var _origConfDel = confirmDelete;
-confirmDelete = function() {
-  var delId  = pendingDelete;
-  var sched  = delId && String(delId).indexOf('OR_') !== 0 ?
-               schedules.find(function(s){return s.id===delId;}) : null;
-  _origConfDel();
-  if (!SHEETS_URL) return;
-  if (delId && String(delId).indexOf('OR_') !== 0) {
-    apiSend({action:'deleteSchedule', id:delId, actor:currentUser.code});
-    // 急診刀一起刪急診記錄
-    if (sched && sched.emergency) {
-      var dr = getUser(sched.doctor);
-      apiSend({
-        action:          'deleteEmergencyLog',
-        date:            sched.date,
-        session:         sched.session,
-        emergencyDoctor: dr ? dr.name : sched.doctor,
-        emergencyOpname: sched.opname
-      });
+// ══ 初始載入 ══
+// 先從 Sheets 載入資料，再顯示登入畫面
+loading(true);
+apiGet({action:'getAll'},function(data){
+  loading(false);
+  if(data&&data.status==='ok'){
+    if(data.users&&data.users.length){
+      var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+      if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+      DATA.users=data.users;
+    }else{
+      DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
     }
-  } else if (delId && String(delId).indexOf('OR_') === 0) {
-    apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
+    if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
+    if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+    if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+    if(data.logs)DATA.logs=data.logs;
+  } else {
+    DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
   }
-};
-
-// ══ 覆寫 confirmEmergency ══
-var _origConfEm = confirmEmergency;
-confirmEmergency = function() {
-  var p = pendingEmergency;
-  _origConfEm();
-  if (SHEETS_URL && p) {
-    apiSend({
-      action:          'addEmergencyLog',
-      date:            p.date,
-      orName:          p.or.name,
-      session:         p.sess,
-      emergencyDoctor: currentUser.name,
-      emergencyOpname: p.opname,
-      blockedDoctor:   p.cdr ? p.cdr.name : p.conflict.doctor,
-      blockedOpname:   p.conflict.opname
-    });
-  }
-};
-
-// ══ 覆寫刀房相關操作，同步到 Sheets ══
-var _origSaveOR = saveOR;
-saveOR = function(id) {
-  _origSaveOR(id);
-  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
-};
-var _origConfClose = confirmClose;
-confirmClose = function(id) {
-  _origConfClose(id);
-  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
-};
-var _origReopenOR = reopenOR;
-reopenOR = function(id) {
-  _origReopenOR(id);
-  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
-};
-var _origConfAddOR = confirmAddOR;
-confirmAddOR = function() {
-  _origConfAddOR();
-  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
-};
-
-// ══ 覆寫 doRegister，同步使用者到 Sheets ══
-doRegister = function() {
-  var code = document.getElementById('reg-code').value.trim();
-  var name = document.getElementById('reg-name').value.trim();
-  var pw   = document.getElementById('reg-pw').value;
-  var pw2  = document.getElementById('reg-pw2').value;
-  var err  = document.getElementById('reg-error'); err.style.display='none';
-  if(!code||!name||!pw||!pw2){err.textContent='請填寫所有欄位';err.style.display='block';return;}
-  if(pw.length<6){err.textContent='密碼至少需要 6 個字元';err.style.display='block';return;}
-  if(pw!==pw2){err.textContent='兩次密碼不一致';err.style.display='block';return;}
-  if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
-  var now = new Date();
-  var nu  = {code:code, name:name, pw:hashPw(pw), role:'doctor', createdAt:toDateStr(now)};
-  users.push(nu); saveData('users_v2', users);
-  if (SHEETS_URL) apiSend({action:'addUser', code:nu.code, name:nu.name, pw:nu.pw, role:'doctor', createdAt:nu.createdAt});
-  currentUser = nu;
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('main-app').style.display='flex';
-  showToast('✓ 註冊成功，歡迎 '+name+'！');
-  initUI();
-};
-
-// ══ 覆寫 initUI，登入後自動同步 ══
-var _origInitUI = initUI;
-initUI = function() {
-  _origInitUI();
-  if (SHEETS_URL) {
-    loadFromSheets(function() {
-      populateDoctorSelect();
-      populateORSelect();
-      var today = toDateStr(new Date());
-      var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
-      var uniqueDates = dates.filter(function(d,i){ return dates.indexOf(d)===i; }).sort();
-      var best = today;
-      var future = uniqueDates.filter(function(d){ return d >= today; });
-      var past   = uniqueDates.filter(function(d){ return d < today; }).reverse();
-      if(future.length) best = future[0];
-      else if(past.length) best = past[0];
-      document.getElementById('dashboard-date').value = best;
-      // 確保從 localStorage 重新讀取最新資料
-      ors       = loadData('ors_v2', DEFAULT_ORS);
-      schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
-      users     = loadData('users_v2', DEFAULT_USERS);
-      setTimeout(function(){
-        populateDoctorSelect();
-        populateORSelect();
-        renderDashboard();
-        renderList();
-        renderStats();
-        if(isAdminRole(currentUser.role)) { renderAdminOR(); renderLogs(); }
-      }, 100);
-    });
-  }
-};
+});
 </script>
 </body>
 </html>
