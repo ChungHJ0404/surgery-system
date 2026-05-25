@@ -1125,31 +1125,51 @@ function showPage(id,btn){
 </script>
 </body>
 </html>
-<!-- sync patch: replace localStorage calls with Sheets API -->
+<!-- sync layer: GET-based Sheets API -->
 <script>
-// ══ Sheets 同步層 ══
-var SYNCING = false;
+// ══ 工具：把物件轉成 URL query string ══
+function toQS(obj) {
+  return Object.keys(obj).map(function(k) {
+    return encodeURIComponent(k) + '=' + encodeURIComponent(obj[k]);
+  }).join('&');
+}
 
-// 啟動時從 Sheets 載入所有資料
+// ══ 通用 GET 請求（有回傳值）══
+function apiGet(params, callback) {
+  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
+  var url = SHEETS_URL + '?' + toQS(params);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(d) { if(callback) callback(d); })
+    .catch(function(e) { if(callback) callback({status:'error', message:e.toString()}); });
+}
+
+// ══ 通用 GET 請求（不需回傳，fire-and-forget）══
+function apiSend(params) {
+  if (!SHEETS_URL) return;
+  var url = SHEETS_URL + '?' + toQS(params);
+  fetch(url).catch(function(){});
+}
+
+// ══ 啟動時從 Sheets 載入所有資料 ══
 function loadFromSheets(callback) {
   if (!SHEETS_URL) { if(callback) callback(); return; }
-  SYNCING = true;
   showToast('⏳ 正在載入資料…');
-  api({action:'getAll'}, function(data) {
-    SYNCING = false;
-    if (data.status !== 'ok') { showToast('⚠️ 無法連線 Sheets，使用本地資料'); if(callback)callback(); return; }
-    // 合併使用者（以 Sheets 為主，保留本地管理員）
+  apiGet({action:'getAll'}, function(data) {
+    if (!data || data.status !== 'ok') {
+      showToast('⚠️ 無法連線 Sheets，使用本地資料');
+      if(callback) callback(); return;
+    }
     if (data.users && data.users.length) {
       var localAdmin = users.filter(function(u){return u.role==='admin';});
       var sheetsUsers = data.users;
-      // 確保本地管理員也在
       localAdmin.forEach(function(a){
         if(!sheetsUsers.find(function(u){return u.code===a.code;})) sheetsUsers.push(a);
       });
       users = sheetsUsers;
       saveData('users_v2', users);
     }
-    if (data.schedules) { schedules = data.schedules; saveData('schedules_v2', schedules); }
+    if (data.schedules)     { schedules     = data.schedules;     saveData('schedules_v2', schedules); }
     if (data.ors && data.ors.length) { ors = data.ors; saveData('ors_v2', ors); }
     if (data.emergencyLogs) { emergencyLogs = data.emergencyLogs; saveData('emergency_logs', emergencyLogs); }
     showToast('✓ 資料已同步');
@@ -1157,111 +1177,97 @@ function loadFromSheets(callback) {
   });
 }
 
-// 共用 POST 函式
-function api(body, callback) {
-  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
-  fetch(SHEETS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(r) {
-    // no-cors 無法讀 response body，視為成功
-    if(callback) callback({status:'ok'});
-  }).catch(function(e) {
-    console.error('API error:', e);
-    if(callback) callback({status:'error', message:e.toString()});
-  });
-}
-
-// 有回傳值的 POST（用 redirect trick）
-function apiRead(body, callback) {
-  if (!SHEETS_URL) { if(callback) callback({status:'no_url'}); return; }
-  fetch(SHEETS_URL, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(r){ return r.json(); })
-  .then(function(d){ if(callback) callback(d); })
-  .catch(function(e){ if(callback) callback({status:'error', message:e.toString()}); });
-}
-
-// ══ 覆寫 doAddSchedule，同步到 Sheets ══
+// ══ 覆寫 doAddSchedule ══
 var _origDoAdd = doAddSchedule;
 doAddSchedule = function(p) {
   _origDoAdd(p);
   if (SHEETS_URL) {
-    api({
-      action:'addSchedule',
-      date:p.date, or:p.orId, session:p.sess, duration:p.dur,
-      doctor:p.doctor, opname:p.opname,
-      chartno:document.getElementById('f-chartno').value.trim(),
-      patname:document.getElementById('f-patname').value.trim(),
-      note:document.getElementById('f-note').value.trim(),
-      emergency:p.isEm, createdBy:currentUser.code
+    apiSend({
+      action:    'addSchedule',
+      date:      p.date,
+      or:        p.orId,
+      session:   p.sess,
+      duration:  p.dur,
+      doctor:    p.doctor,
+      opname:    p.opname,
+      chartno:   document.getElementById('f-chartno').value.trim(),
+      patname:   document.getElementById('f-patname').value.trim(),
+      note:      document.getElementById('f-note').value.trim(),
+      emergency: p.isEm ? 'true' : 'false',
+      createdBy: currentUser.code
     });
   }
 };
 
-// ══ 覆寫 confirmDelete，同步到 Sheets ══
+// ══ 覆寫 confirmDelete ══
 var _origConfDel = confirmDelete;
 confirmDelete = function() {
-  var delId = pendingDelete;
+  var delId  = pendingDelete;
+  var sched  = delId && String(delId).indexOf('OR_') !== 0 ?
+               schedules.find(function(s){return s.id===delId;}) : null;
   _origConfDel();
-  if (SHEETS_URL && delId && String(delId).indexOf('OR_') !== 0) {
-    api({action:'deleteSchedule', id:delId, actor:currentUser.code});
+  if (!SHEETS_URL) return;
+  if (delId && String(delId).indexOf('OR_') !== 0) {
+    apiSend({action:'deleteSchedule', id:delId, actor:currentUser.code});
+    // 急診刀一起刪急診記錄
+    if (sched && sched.emergency) {
+      var dr = getUser(sched.doctor);
+      apiSend({
+        action:          'deleteEmergencyLog',
+        date:            sched.date,
+        session:         sched.session,
+        emergencyDoctor: dr ? dr.name : sched.doctor,
+        emergencyOpname: sched.opname
+      });
+    }
+  } else if (delId && String(delId).indexOf('OR_') === 0) {
+    apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
   }
 };
 
-// ══ 覆寫 confirmEmergency，同步急診記錄 ══
+// ══ 覆寫 confirmEmergency ══
 var _origConfEm = confirmEmergency;
 confirmEmergency = function() {
   var p = pendingEmergency;
   _origConfEm();
   if (SHEETS_URL && p) {
-    api({
-      action:'addEmergencyLog',
-      date:p.date, orName:p.or.name, session:p.sess,
-      emergencyDoctor:currentUser.name,
-      emergencyOpname:p.opname,
-      blockedDoctor:p.cdr?p.cdr.name:p.conflict.doctor,
-      blockedOpname:p.conflict.opname
+    apiSend({
+      action:          'addEmergencyLog',
+      date:            p.date,
+      orName:          p.or.name,
+      session:         p.sess,
+      emergencyDoctor: currentUser.name,
+      emergencyOpname: p.opname,
+      blockedDoctor:   p.cdr ? p.cdr.name : p.conflict.doctor,
+      blockedOpname:   p.conflict.opname
     });
   }
 };
 
-// ══ 覆寫 saveOR，同步刀房到 Sheets ══
+// ══ 覆寫刀房相關操作，同步到 Sheets ══
 var _origSaveOR = saveOR;
 saveOR = function(id) {
   _origSaveOR(id);
-  if (SHEETS_URL) {
-    api({action:'saveOR', ors:ors, actor:currentUser.code});
-  }
+  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
 };
-
-// ══ 覆寫 confirmClose / reopenOR，同步刀房 ══
 var _origConfClose = confirmClose;
 confirmClose = function(id) {
   _origConfClose(id);
-  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
 };
 var _origReopenOR = reopenOR;
 reopenOR = function(id) {
   _origReopenOR(id);
-  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
 };
-
-// ══ 覆寫 confirmAddOR / confirmDelete(OR)，同步刀房 ══
 var _origConfAddOR = confirmAddOR;
 confirmAddOR = function() {
   _origConfAddOR();
-  if (SHEETS_URL) api({action:'saveOR', ors:ors, actor:currentUser.code});
+  if (SHEETS_URL) apiSend({action:'saveOR', ors:encodeURIComponent(JSON.stringify(ors)), actor:currentUser.code});
 };
 
-// ══ 覆寫 doRegister，同步使用者 ══
-var _origDoReg = doRegister;
+// ══ 覆寫 doRegister，同步使用者到 Sheets ══
 doRegister = function() {
-  // 先從 Sheets 確認代號是否重複，再註冊
   var code = document.getElementById('reg-code').value.trim();
   var name = document.getElementById('reg-name').value.trim();
   var pw   = document.getElementById('reg-pw').value;
@@ -1271,18 +1277,18 @@ doRegister = function() {
   if(pw.length<6){err.textContent='密碼至少需要 6 個字元';err.style.display='block';return;}
   if(pw!==pw2){err.textContent='兩次密碼不一致';err.style.display='block';return;}
   if(users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();})){err.textContent='此代號已被使用';err.style.display='block';return;}
-  var now=new Date();
-  var nu={code:code,name:name,pw:hashPw(pw),role:'doctor',createdAt:toDateStr(now)};
-  users.push(nu); saveData('users_v2',users);
-  if(SHEETS_URL) api({action:'addUser',code:nu.code,name:nu.name,pw:nu.pw,role:'doctor',createdAt:nu.createdAt});
-  currentUser=nu;
+  var now = new Date();
+  var nu  = {code:code, name:name, pw:hashPw(pw), role:'doctor', createdAt:toDateStr(now)};
+  users.push(nu); saveData('users_v2', users);
+  if (SHEETS_URL) apiSend({action:'addUser', code:nu.code, name:nu.name, pw:nu.pw, role:'doctor', createdAt:nu.createdAt});
+  currentUser = nu;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
   showToast('✓ 註冊成功，歡迎 '+name+'！');
   initUI();
 };
 
-// ══ 覆寫 initUI，登入後先同步資料 ══
+// ══ 覆寫 initUI，登入後自動同步 ══
 var _origInitUI = initUI;
 initUI = function() {
   _origInitUI();
@@ -1300,3 +1306,5 @@ initUI = function() {
   }
 };
 </script>
+</body>
+</html>
