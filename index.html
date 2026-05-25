@@ -1378,6 +1378,10 @@ function loadFromSheets(callback) {
 // ══ 覆寫 doAddSchedule ══
 var _origDoAdd = doAddSchedule;
 doAddSchedule = function(p) {
+  // 先把欄位值存起來，因為 _origDoAdd 會清空表單
+  var chartno = document.getElementById('f-chartno').value.trim();
+  var patname = document.getElementById('f-patname').value.trim();
+  var note    = document.getElementById('f-note').value.trim();
   _origDoAdd(p);
   if (SHEETS_URL) {
     apiSend({
@@ -1388,9 +1392,9 @@ doAddSchedule = function(p) {
       duration:  p.dur,
       doctor:    p.doctor,
       opname:    p.opname,
-      chartno:   document.getElementById('f-chartno').value.trim(),
-      patname:   document.getElementById('f-patname').value.trim(),
-      note:      document.getElementById('f-note').value.trim(),
+      chartno:   chartno,
+      patname:   patname,
+      note:      note,
       emergency: p.isEm ? 'true' : 'false',
       createdBy: currentUser.code
     });
