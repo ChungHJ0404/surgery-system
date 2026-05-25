@@ -862,8 +862,8 @@ function showDebug(){
   ors.forEach(function(o,i){
     msg += (i+1)+'. id='+o.id+' name='+o.name+' open='+o.open+'\n';
   });
-  msg += '\n【排程前3筆】\n';
-  schedules.slice(0,3).forEach(function(s,i){
+  msg += '\n【排程前5筆】\n';
+  schedules.slice(0,5).forEach(function(s,i){
     msg += (i+1)+'. 日期=「'+s.date+'」 or='+s.or+' 術式='+s.opname+'\n';
   });
   alert(msg);
@@ -1390,6 +1390,7 @@ function loadFromSheets(callback) {
       showToast('⚠️ 無法連線 Sheets，使用本地資料');
       if(callback) callback(); return;
     }
+    // 更新使用者
     if (data.users && data.users.length) {
       var localAdmin = users.filter(function(u){return u.role==='admin';});
       var sheetsUsers = data.users;
@@ -1399,15 +1400,24 @@ function loadFromSheets(callback) {
       users = sheetsUsers;
       saveData('users_v2', users);
     }
-    if (data.schedules) {
+    // 更新排程
+    if (data.schedules && data.schedules.length >= 0) {
       schedules = data.schedules.map(function(s){
         s.date = normDate(s.date);
         return s;
       });
       saveData('schedules_v2', schedules);
     }
-    if (data.ors && data.ors.length) { ors = data.ors; saveData('ors_v2', ors); }
-    if (data.emergencyLogs) { emergencyLogs = data.emergencyLogs; saveData('emergency_logs', emergencyLogs); }
+    // 更新刀房（強制覆蓋）
+    if (data.ors && data.ors.length > 0) {
+      ors = data.ors;
+      saveData('ors_v2', ors);
+    }
+    // 更新急診記錄
+    if (data.emergencyLogs) {
+      emergencyLogs = data.emergencyLogs;
+      saveData('emergency_logs', emergencyLogs);
+    }
     showToast('✓ 資料已同步');
     if(callback) callback();
   });
@@ -1538,18 +1548,17 @@ initUI = function() {
       populateORSelect();
       var today = toDateStr(new Date());
       var dates = schedules.map(function(s){ return normDate(s.date); }).filter(Boolean);
-      var uniqueDates = dates.filter(function(d,i){ return dates.indexOf(d)===i; });
+      var uniqueDates = dates.filter(function(d,i){ return dates.indexOf(d)===i; }).sort();
       var best = today;
-      if(uniqueDates.length) {
-        var future = uniqueDates.filter(function(d){return d>=today;}).sort();
-        var past   = uniqueDates.filter(function(d){return d<today;}).sort().reverse();
-        if(future.length) best = future[0];
-        else if(past.length) best = past[0];
-      }
-      var datePicker = document.getElementById('dashboard-date');
-      datePicker.value = best;
-      // 強制觸發一次 render 確保日期有套用
-      setTimeout(function(){ renderDashboard(); }, 50);
+      var future = uniqueDates.filter(function(d){ return d >= today; });
+      var past   = uniqueDates.filter(function(d){ return d < today; }).reverse();
+      if(future.length) best = future[0];
+      else if(past.length) best = past[0];
+      document.getElementById('dashboard-date').value = best;
+      renderDashboard();
+      renderList();
+      renderStats();
+      if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
       renderList();
       renderStats();
       if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
