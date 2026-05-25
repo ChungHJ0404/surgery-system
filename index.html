@@ -696,6 +696,21 @@ var pendingDelete    = null;
 function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
 function pad(n){return String(n).padStart(2,'0');}
 function toDateStr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+
+// 把任何格式的日期轉成 yyyy-MM-dd
+function normDate(v){
+  if(!v) return '';
+  if(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  var d = new Date(v);
+  if(!isNaN(d.getTime())) return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  return String(v);
+}
+// 顯示用：MM/DD
+function dispDate(v){
+  var s = normDate(v);
+  if(!s) return '';
+  return s.replace(/^\d{4}-/,'').replace('-','/');
+}
 function genId(){return 's'+Date.now();}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
 function addLog(msg,type){var now=new Date();logs.unshift({time:'今天 '+pad(now.getHours())+':'+pad(now.getMinutes()),actor:currentUser?currentUser.name:'system',msg:msg,type:type||''});saveData('logs_v2',logs);renderLogs();}
@@ -896,7 +911,7 @@ function renderEmergencyStats(){
   var html='<div class="list-header"><span class="col">日期</span><span class="col">刀房/時段</span><span class="col">急診醫師</span><span class="col-wide">急診術式</span><span class="col">被擋醫師</span><span class="col-wide">被擋術式</span></div>';
   mo.slice(0,10).forEach(function(e){
     html+='<div class="list-row">'
-      +'<div class="col">'+e.date.replace(/\d{4}-/,'').replace('-','/')+'</div>'
+      +'<div class="col">'+dispDate(e.date)+'</div>'
       +'<div class="col">'+e.orName+' '+e.session+'</div>'
       +'<div class="col" style="color:var(--orange);font-weight:500">'+e.emergencyDoctor+'</div>'
       +'<div class="col-wide" style="color:var(--orange)">🚨 '+e.emergencyOpname+'</div>'
@@ -1061,7 +1076,7 @@ function renderList(){
         +'<div style="flex:1;min-width:0">'
         +'<div style="font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
         +'<div style="font-size:12px;color:var(--text-2);margin-bottom:2px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
-        +'<div style="font-size:11px;color:var(--text-3)">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+' · '+(or?or.name:'?')+'</div>'
+        +'<div style="font-size:11px;color:var(--text-3)">'+dispDate(s.date)+' '+s.session+' · '+(or?or.name:'?')+'</div>'
         +'</div>'
         +(canDel?'<button style="flex-shrink:0;background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:4px 10px;font-size:12px;cursor:pointer" onclick="askDelete(\''+s.id+'\')">刪除</button>':'')
         +'</div></div>';
@@ -1075,7 +1090,7 @@ function renderList(){
       html+='<div class="list-row">'
         +'<div class="col-wide" style="font-weight:500">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
         +'<div class="col">'+(dr?dr.name:'?')+'</div>'
-        +'<div class="col">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+'</div>'
+        +'<div class="col">'+dispDate(s.date)+' '+s.session+'</div>'
         +'<div class="col">'+(or?or.name:'?')+'</div>'
         +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
         +'<div style="width:32px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:2px 7px;font-size:12px" onclick="askDelete(\''+s.id+'\')">✕</button>':'')+'</div>'
@@ -1154,7 +1169,7 @@ function renderStats(){
     return '<div class="bar-row"><div class="bar-top"><span style="font-weight:500">'+b.name+'</span><span style="color:var(--orange);font-weight:600">被擋 '+b.count+' 次</span></div><div class="bar-track"><div class="bar-fill bar-fill-orange" style="width:'+(mbx?Math.round(b.count/mbx*100):0)+'%"></div></div></div>';
   }).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
 
-  var detail=moEmLogs.slice(0,5).map(function(e){return e.date.replace(/\d{4}-/,'').replace('-','/')+' '+e.orName+' — '+e.blockedDoctor+' 被 '+e.emergencyDoctor+' 插刀';}).join('　');
+  var detail=moEmLogs.slice(0,5).map(function(e){return dispDate(e.date)+' '+e.orName+' — '+e.blockedDoctor+' 被 '+e.emergencyDoctor+' 插刀';}).join('　');
   document.getElementById('blocked-detail').textContent=detail;
 }
 
@@ -1320,7 +1335,13 @@ function loadFromSheets(callback) {
       users = sheetsUsers;
       saveData('users_v2', users);
     }
-    if (data.schedules)     { schedules     = data.schedules;     saveData('schedules_v2', schedules); }
+    if (data.schedules) {
+      schedules = data.schedules.map(function(s){
+        s.date = normDate(s.date);
+        return s;
+      });
+      saveData('schedules_v2', schedules);
+    }
     if (data.ors && data.ors.length) { ors = data.ors; saveData('ors_v2', ors); }
     if (data.emergencyLogs) { emergencyLogs = data.emergencyLogs; saveData('emergency_logs', emergencyLogs); }
     showToast('✓ 資料已同步');
