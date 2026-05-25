@@ -846,7 +846,7 @@ function renderDashboard(){
             +'<span style="font-size:12px;font-weight:700;color:'+tc+';min-width:42px;padding-top:1px">'+sess+'</span>'
             +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-            +'<div style="font-size:11px;color:var(--text-2);margin-top:2px">'+(dr?dr.name:'?')+(s.patname?' · '+s.patname:'')+'</div>'
+            +'<div style="font-size:11px;color:var(--text-2);margin-top:2px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
             +'</div></div>';
         }
       });
@@ -870,7 +870,7 @@ function renderDashboard(){
         }else{
           var s=m[0];var dr=getUser(s.doctor);
           var cl=s.emergency?'slot-emergency':'slot-normal';
-          cells+='<div class="slot '+cl+'"><div class="slot-name">'+(s.emergency?'🚨 ':'')+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+'</div></div>';
+          cells+='<div class="slot '+cl+'"><div class="slot-name">'+(s.emergency?'🚨 ':'')+s.opname+'</div><div class="slot-sub">'+(dr?dr.name:'?')+(s.patname?' · '+s.patname:'')+(s.chartno?' #'+s.chartno:'')+'</div></div>';
         }
       });
       row.innerHTML=cells;body.appendChild(row);
@@ -1060,7 +1060,7 @@ function renderList(){
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
         +'<div style="flex:1;min-width:0">'
         +'<div style="font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-        +'<div style="font-size:12px;color:var(--text-2);margin-bottom:2px">'+(dr?dr.name:'?')+(s.patname?' · '+s.patname:'')+'</div>'
+        +'<div style="font-size:12px;color:var(--text-2);margin-bottom:2px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
         +'<div style="font-size:11px;color:var(--text-3)">'+s.date.replace(/\d{4}-/,'').replace('-','/')+' '+s.session+' · '+(or?or.name:'?')+'</div>'
         +'</div>'
         +(canDel?'<button style="flex-shrink:0;background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius);padding:4px 10px;font-size:12px;cursor:pointer" onclick="askDelete(\''+s.id+'\')">刪除</button>':'')
