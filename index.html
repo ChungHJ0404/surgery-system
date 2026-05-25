@@ -859,14 +859,30 @@ function showDebug(){
   msg += '排程總筆數：'+schedules.length+'\n';
   msg += '刀房總數：'+ors.length+'\n\n';
   msg += '【刀房】\n';
-  ors.forEach(function(o,i){
-    msg += (i+1)+'. id='+o.id+' name='+o.name+' open='+o.open+'\n';
-  });
+  if(ors.length){
+    ors.forEach(function(o,i){
+      msg += (i+1)+'. id='+o.id+' name='+o.name+' open='+o.open+'\n';
+    });
+  } else {
+    msg += '（空）\n';
+  }
   msg += '\n【排程前5筆】\n';
   schedules.slice(0,5).forEach(function(s,i){
     msg += (i+1)+'. 日期=「'+s.date+'」 or='+s.or+' 術式='+s.opname+'\n';
   });
   alert(msg);
+  // 另外直接 fetch 測試
+  fetch(SHEETS_URL+'?action=getAll', {redirect:'follow'})
+    .then(function(r){return r.text();})
+    .then(function(t){
+      try{
+        var d=JSON.parse(t);
+        alert('Sheets 直接回傳：\n刀房數='+d.ors.length+'\n排程數='+d.schedules.length+'\n第一間刀房='+JSON.stringify(d.ors[0]));
+      }catch(e){
+        alert('解析失敗：'+t.substring(0,300));
+      }
+    })
+    .catch(function(e){alert('Fetch 失敗：'+e);});
 }
 
 
