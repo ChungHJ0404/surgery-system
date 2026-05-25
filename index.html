@@ -1171,6 +1171,8 @@ function confirmDelete(){
 
 // ══ 排程列表 ══
 function renderList(){
+  schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
+  users     = loadData('users_v2', DEFAULT_USERS);
   var df=document.getElementById('filter-doctor').value,p=document.getElementById('filter-period').value;
   var now=new Date();
   var f=schedules.filter(function(s){
@@ -1250,6 +1252,9 @@ function saveTargets(){
 
 // ══ 統計 ══
 function renderStats(){
+  schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
+  users     = loadData('users_v2', DEFAULT_USERS);
+  ors       = loadData('ors_v2', DEFAULT_ORS);
   var now=new Date();
   var mo=schedules.filter(function(s){var d=new Date(normDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var yr=schedules.filter(function(s){return new Date(normDate(s.date)).getFullYear()===now.getFullYear();});
