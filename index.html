@@ -785,13 +785,40 @@ function checkCodeAvailable(){
   if(exists){hint.textContent='⚠ 此代號已被使用';hint.style.color='var(--red)';}
   else{hint.textContent='✓ 代號可使用';hint.style.color='var(--green)';}
 }
+function isAdminRole(role){
+  return role==='admin'||role==='管理員'||role==='管理者';
+}
+
 function doLogin(){
   var code=document.getElementById('login-code').value.trim();
   var pw=document.getElementById('login-pw').value;
   var err=document.getElementById('login-error');err.style.display='none';
   if(!code||!pw){err.textContent='請填寫代號與密碼';err.style.display='block';return;}
+  // 先從本地找
   var u=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
-  if(!u||u.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
+  // 本地找不到或密碼不對，從 Sheets 重新載入再試
+  if(!u||u.pw!==hashPw(pw)){
+    if(SHEETS_URL){
+      var overlay=document.getElementById('loading-overlay');
+      if(overlay)overlay.style.display='flex';
+      apiGet({action:'getAll'},function(data){
+        if(overlay)overlay.style.display='none';
+        if(data&&data.status==='ok'){
+          if(data.users&&data.users.length){users=data.users;saveData('users_v2',users);}
+          if(data.ors&&data.ors.length){ors=data.ors;saveData('ors_v2',ors);}
+          if(data.schedules){schedules=data.schedules.map(function(s){s.date=normDate(s.date);return s;});saveData('schedules_v2',schedules);}
+        }
+        var u2=users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+        if(!u2||u2.pw!==hashPw(pw)){err.textContent='代號或密碼不正確';err.style.display='block';return;}
+        currentUser=u2;
+        document.getElementById('auth-screen').style.display='none';
+        document.getElementById('main-app').style.display='flex';
+        initUI();
+      });
+      return;
+    }
+    err.textContent='代號或密碼不正確';err.style.display='block';return;
+  }
   currentUser=u;
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('main-app').style.display='flex';
@@ -828,7 +855,7 @@ function doLogout(){
 
 // ══ Init ══
 function initUI(){
-  var isAdmin=currentUser.role==='admin';
+  var isAdmin=isAdminRole(currentUser.role);
   document.getElementById('admin-nav-item').style.display=isAdmin?'block':'none';
   document.getElementById('setup-nav-item').style.display=isAdmin?'block':'none';
   var mnavAdmin=document.getElementById('mnav-admin');
@@ -1097,7 +1124,7 @@ function doAddSchedule(p){
 function askDelete(id){
   var s=schedules.find(function(x){return x.id===id;});
   if(!s)return;
-  var isAdmin=currentUser.role==='admin';
+  var isAdmin=isAdminRole(currentUser.role);
   var isOwner=s.createdBy===currentUser.code;
   if(!isAdmin&&!isOwner){showToast('只有管理員或本人可以刪除');return;}
   pendingDelete=id;
@@ -1136,7 +1163,7 @@ function renderList(){
     if(p==='year')return d.getFullYear()===now.getFullYear();
     return true;
   }).sort(function(a,b){var da=normDate(a.date),db=normDate(b.date);return da>db?1:da<db?-1:0;});
-  var isAdmin=currentUser.role==='admin';
+  var isAdmin=isAdminRole(currentUser.role);
   var html='';
   if(isMobile()){
     if(!f.length){html='<div style="padding:20px 0;text-align:center;color:var(--text-3);font-size:13px">此期間沒有排程</div>';}
@@ -1415,7 +1442,7 @@ function loadFromSheets(callback) {
     }
     // 更新使用者
     if (data.users && data.users.length) {
-      var localAdmin = users.filter(function(u){return u.role==='admin';});
+      var localAdmin = users.filter(function(u){return isAdminRole(u.role);});
       var sheetsUsers = data.users;
       localAdmin.forEach(function(a){
         if(!sheetsUsers.find(function(u){return u.code===a.code;})) sheetsUsers.push(a);
@@ -1588,7 +1615,7 @@ initUI = function() {
         renderDashboard();
         renderList();
         renderStats();
-        if(currentUser.role==='admin') { renderAdminOR(); renderLogs(); }
+        if(isAdminRole(currentUser.role)) { renderAdminOR(); renderLogs(); }
       }, 100);
     });
   }
