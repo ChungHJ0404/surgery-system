@@ -387,7 +387,10 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
         <div class="card">
           <div class="card-title">
             <span>今日刀房排程</span>
-            <input type="date" id="dashboard-date" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderDashboard()">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="date" id="dashboard-date" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;outline:none" onchange="renderDashboard()">
+              <button class="btn btn-secondary btn-sm" onclick="showDebug()" style="font-size:11px">🔍 除錯</button>
+            </div>
           </div>
           <div class="or-grid-wrap"><div class="or-grid">
             <div class="or-grid-header">
@@ -850,7 +853,17 @@ function initUI(){
 }
 
 // ══ 今日刀表 ══
-function isMobile(){ return window.innerWidth <= 768; }
+function showDebug(){
+  var dateVal = document.getElementById('dashboard-date').value;
+  var msg = '選擇日期：'+dateVal+'\n';
+  msg += '排程總筆數：'+schedules.length+'\n\n';
+  schedules.slice(0,5).forEach(function(s,i){
+    msg += (i+1)+'. 原始日期=「'+s.date+'」 normDate=「'+normDate(s.date)+'」 術式='+s.opname+'\n';
+  });
+  alert(msg);
+}
+
+
 
 function renderDashboard(){
   var dateVal=document.getElementById('dashboard-date').value;
