@@ -888,6 +888,8 @@ function showDebug(){
 
 
 function renderDashboard(){
+  // 確保使用最新的刀房資料
+  if(!ors || ors.length===0) ors = loadData('ors_v2', DEFAULT_ORS);
   var dateVal=document.getElementById('dashboard-date').value;
   var sessions=['08:00','10:00','13:00','15:00'];
   var body=document.getElementById('or-grid-body');body.innerHTML='';
@@ -1571,7 +1573,13 @@ initUI = function() {
       if(future.length) best = future[0];
       else if(past.length) best = past[0];
       document.getElementById('dashboard-date').value = best;
+      // 確保從 localStorage 重新讀取最新資料
+      ors       = loadData('ors_v2', DEFAULT_ORS);
+      schedules = loadData('schedules_v2', DEFAULT_SCHEDULES);
+      users     = loadData('users_v2', DEFAULT_USERS);
       setTimeout(function(){
+        populateDoctorSelect();
+        populateORSelect();
         renderDashboard();
         renderList();
         renderStats();
