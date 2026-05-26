@@ -778,40 +778,73 @@ function renderDashboard(){
   var ts=DATA.schedules.filter(function(s){return fmtDate(s.date)===dateVal;});
   var container=document.getElementById('or-container');container.innerHTML='';
   if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料</div>';return;}
+
   DATA.ors.forEach(function(or){
-    var card=document.createElement('div');card.className='or-card';
-    // header
-    var hBg=or.open?'var(--green-bg)':'var(--gray-bg)';
-    var hColor=or.open?'var(--green)':'var(--text-3)';
-    card.innerHTML='<div class="or-card-header" style="background:'+hBg+'">'
-      +'<span class="or-dot '+(or.open?'dot-open':'dot-closed')+'"></span>'
-      +'<span style="font-size:15px;font-weight:700;color:'+hColor+'">'+or.name+'</span>'
-      +(or.open?'<span style="margin-left:auto;font-size:12px;color:var(--green);font-weight:500">開放中</span>'
-               :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
+    var card=document.createElement('div');
+    card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;';
+
+    // ── 刀房標題 ──
+    var headBg=or.open?'var(--green-bg)':'var(--gray-bg)';
+    var headColor=or.open?'var(--green)':'var(--text-3)';
+    card.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+headBg+';border-bottom:1px solid var(--border-light)">'
+      +'<span style="width:8px;height:8px;border-radius:50%;background:'+(or.open?'var(--green)':'var(--text-3)')+';flex-shrink:0;display:inline-block"></span>'
+      +'<span style="font-size:15px;font-weight:700;color:'+headColor+'">'+or.name+'</span>'
+      +(or.open
+        ?'<span style="margin-left:auto;font-size:12px;color:var(--green);font-weight:500;background:var(--surface);padding:2px 10px;border-radius:20px">開放中</span>'
+        :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
       +'</div>';
+
     if(!or.open){container.appendChild(card);return;}
-    var sessions=document.createElement('div');sessions.className='or-sessions';
-    SESSIONS.forEach(function(sess){
+
+    // ── 時段橫排 ──
+    var body=document.createElement('div');
+    body.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);';
+
+    SESSIONS.forEach(function(sess,si){
       var m=ts.filter(function(s){return Number(s.or)===or.id&&s.session===sess;});
-      var row=document.createElement('div');row.className='or-session-row';
-      var timeSpan='<span class="sess-time">'+sess+'</span>';
+      var col=document.createElement('div');
+      col.style.cssText='border-right:'+(si<3?'1px solid var(--border-light)':'none')+';';
+
+      // 時段標籤
+      var timeLabel='<div style="font-size:11px;font-weight:600;color:var(--text-2);padding:7px 12px;background:var(--bg);border-bottom:1px solid var(--border-light);letter-spacing:.02em">'+sess+'</div>';
+
       if(!m.length){
-        row.innerHTML=timeSpan+'<span class="sess-empty">空</span>';
+        // 空
+        col.innerHTML=timeLabel
+          +'<div style="display:flex;align-items:center;justify-content:center;min-height:58px;font-size:13px;color:var(--text-3)">—</div>';
+
       }else if(m.length>1){
-        row.innerHTML=timeSpan+'<span style="color:var(--red);font-weight:600">⚠ 衝突 '+m.length+' 筆</span>';
+        // 衝突：列出所有手術
+        var conflictHtml='<div style="padding:8px 10px;min-height:58px;">'
+          +'<div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:4px">⚠ 衝突 '+m.length+' 筆</div>';
+        m.forEach(function(s,idx){
+          var dr=getUser(s.doctor);
+          conflictHtml+='<div style="padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);border-radius:0 4px 4px 0;margin-bottom:'+(idx<m.length-1?'5px':'0')+'">'
+            +'<div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+            +'<div style="font-size:11px;color:var(--text-2)">'+(dr?dr.name:'?')+'</div>'
+            +'</div>';
+        });
+        conflictHtml+='</div>';
+        col.innerHTML=timeLabel+conflictHtml;
+
       }else{
+        // 一筆手術
         var s=m[0];var dr=getUser(s.doctor);
-        var cls=s.emergency?'sess-emergency':'sess-normal';
-        row.innerHTML=timeSpan+'<div class="sess-filled">'
-          +'<div class="sess-opname '+cls+'">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-          +'<div class="sess-sub">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
+        var indColor=s.emergency?'var(--orange)':'var(--green)';
+        col.innerHTML=timeLabel
+          +'<div style="padding:8px 10px 10px;min-height:58px;border-left:2px solid '+indColor+'">'
+          +'<div style="font-size:12px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+';margin-bottom:3px;line-height:1.4">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+          +'<div style="font-size:11px;color:var(--text-2)">'+(dr?dr.name:'?')+'</div>'
+          +(s.patname?'<div style="font-size:11px;color:var(--text-3)">👤 '+s.patname+(s.chartno?' · #'+s.chartno:'')+'</div>':'')
+          +(s.chartno&&!s.patname?'<div style="font-size:11px;color:var(--text-3)">#'+s.chartno+'</div>':'')
           +'</div>';
       }
-      sessions.appendChild(row);
+      body.appendChild(col);
     });
-    card.appendChild(sessions);
+    card.appendChild(body);
     container.appendChild(card);
   });
+
   // 統計
   var em=ts.filter(function(s){return s.emergency;}).length;
   var cc=DATA.ors.filter(function(o){return !o.open;}).length;
