@@ -1353,8 +1353,17 @@ function syncMobNav(id){
 
 // ══ 初始載入 ══
 // 先從 Sheets 載入資料，再顯示登入畫面
+// 8秒後若還沒回應，直接顯示登入畫面用預設帳號
+var _initTimer = setTimeout(function(){
+  loading(false);
+  if(!DATA.users.length){
+    DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
+  }
+}, 8000);
+
 loading(true);
 apiGet({action:'getAll'},function(data){
+  clearTimeout(_initTimer);
   loading(false);
   if(data&&data.status==='ok'){
     if(data.users&&data.users.length){
