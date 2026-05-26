@@ -820,25 +820,9 @@ function initApp(){
   document.getElementById('tgt-year').value=ty;
   // URL
   if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('url-connected').style.display='block';}
-  // 先用現有資料render，再同步
-  populateDrSelect();
-  populateORSelect();
-  // 找最近有資料的日期
-  var dates=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
-  var td=today();
-  var best=td;
-  if(dates.length){
-    var future=dates.filter(function(d){return d>=td;}).sort();
-    var past=dates.filter(function(d){return d<td;}).sort().reverse();
-    if(future.length)best=future[0];else if(past.length)best=past[0];
-  }
-  document.getElementById('dash-date').value=best;
-  renderDashboard();
-  renderList();
-  renderStats();
   goPage('dashboard',document.querySelector('.nav-item'));
 
-  // 登入後從 Sheets 載入最新資料
+  // 登入後從 Sheets 載入最新資料，載入完才 render
   if(SHEETS_URL){ var _t=setTimeout(function(){ showToast('⚠️ 連線逾時，使用本地資料');
       populateDrSelect();populateORSelect();
       setTimeout(function(){
