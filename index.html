@@ -687,14 +687,31 @@ function doLogin(){
   var pw=document.getElementById('l-pw').value;
   var err=document.getElementById('l-err');err.style.display='none';
   if(!code||!pw){err.textContent='請填寫代號與密碼';err.style.display='block';return;}
+
+  // 確保預設 admin 永遠存在
+  if(!DATA.users.find(function(u){return u.code.toLowerCase()==='admin';})){
+    DATA.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+  }
+
+  // 先用本地資料嘗試登入（不等 Sheets，速度快）
+  var localUser=DATA.users.find(function(u){return u.code.toLowerCase()===code.toLowerCase();});
+  if(localUser&&localUser.pw===hashPw(pw)){
+    CU=localUser;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('main-app').style.display='flex';
+    initApp();
+    return;
+  }
+
+  // 本地找不到，從 Sheets 重新載入再試
   loading(true);
-  // 先從 Sheets 載入最新資料
+  var _timer=setTimeout(function(){loading(false);err.textContent='連線逾時，請重試';err.style.display='block';},8000);
   apiGet({action:'getAll'},function(data){
-    loading(false);
+    clearTimeout(_timer);loading(false);
     if(data&&data.status==='ok'){
       if(data.users&&data.users.length){
-        var adminExists=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
-        if(!adminExists)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+        var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+        if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
         DATA.users=data.users;
       }
       if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
@@ -702,7 +719,6 @@ function doLogin(){
       if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
       if(data.logs)DATA.logs=data.logs;
     }
-    // 也確保預設 admin 存在
     if(!DATA.users.find(function(u){return u.code.toLowerCase()==='admin';})){
       DATA.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
     }
@@ -1352,33 +1368,20 @@ function syncMobNav(id){
 }
 
 // ══ 初始載入 ══
-// 先從 Sheets 載入資料，再顯示登入畫面
-// 8秒後若還沒回應，直接顯示登入畫面用預設帳號
-var _initTimer = setTimeout(function(){
-  loading(false);
-  if(!DATA.users.length){
-    DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
-  }
-}, 8000);
+// 背景靜默載入，不顯示 loading，讓使用者可以直接操作登入畫面
+DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
 
-loading(true);
 apiGet({action:'getAll'},function(data){
-  clearTimeout(_initTimer);
-  loading(false);
   if(data&&data.status==='ok'){
     if(data.users&&data.users.length){
       var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
       if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
       DATA.users=data.users;
-    }else{
-      DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
     }
     if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
     if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
     if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
     if(data.logs)DATA.logs=data.logs;
-  } else {
-    DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
   }
 });
 </script>
