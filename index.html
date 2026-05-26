@@ -1457,7 +1457,7 @@ function renderStats(){
   document.getElementById('dr-bars').innerHTML=drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return bar(dr.name+' ('+dr.code+')',c,mx,'');}).join('');
   var openOrs=DATA.ors.filter(function(o){return o.open;});
   var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return String(s.or)===String(o.id);}).length;}).concat([0]));
-  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return Number(s.or)===or.id;}).length;return bar(or.name,c,mx2,'');}).join('');
+  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return String(s.or)===String(or.id);}).length;return bar(or.name,c,mx2,'');}).join('');
   var moEmLogs=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var bc={};moEmLogs.forEach(function(e){bc[e.blockedDoctor]=(bc[e.blockedDoctor]||0)+1;});
   var ba=Object.keys(bc).map(function(k){return{name:k,count:bc[k]};}).sort(function(a,b){return b.count-a.count;});
@@ -1584,7 +1584,11 @@ function goPage(id,btn){
   document.getElementById('topbar-title').textContent=t;
   document.getElementById('mob-title').textContent=t;
   if(id==='list')renderList();
-  if(id==='stats')renderStats();
+  if(id==='stats'){
+    // 確保用最新資料 render
+    if(DATA.schedules.length||DATA.ors.length)renderStats();
+    else renderStats(); // 即使空也要 render（顯示 0）
+  }
   if(id==='admin')renderAdmin();
   if(id==='dashboard')renderDashboard();
 }
