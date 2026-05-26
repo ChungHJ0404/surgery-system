@@ -670,6 +670,75 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 function getOR(id){return DATA.ors.find(function(o){return String(o.id)===String(id);});}
 function getUser(code){return DATA.users.find(function(u){return u.code===code;});}
 
+// ══ 快取 ══
+var CACHE={};
+function cacheSet(key,val,ttlMin){CACHE[key]={val:val,exp:Date.now()+(ttlMin||5)*60000};}
+function cacheGet(key){var c=CACHE[key];if(!c||Date.now()>c.exp)return null;return c.val;}
+function invalidateCache(date){
+  delete CACHE['date_'+date];
+  var now=new Date();
+  delete CACHE['month_'+now.getFullYear()+'_'+(now.getMonth()+1)];
+}
+
+// ══ 分層載入 ══
+function loadBase(cb){
+  var cached=cacheGet('base');
+  if(cached){
+    if(cached.ors&&cached.ors.length)DATA.ors=cached.ors;
+    if(cached.users&&cached.users.length)DATA.users=cached.users;
+    if(cached.logs)DATA.logs=cached.logs;
+    if(cb)cb();return;
+  }
+  apiGet({action:'getBase'},function(data){
+    if(data&&data.ors&&data.ors.length)DATA.ors=data.ors;
+    if(data&&data.users&&data.users.length){
+      var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+      if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+      DATA.users=data.users;
+    }
+    if(data&&data.logs)DATA.logs=data.logs;
+    cacheSet('base',{ors:DATA.ors,users:DATA.users,logs:DATA.logs},60);
+    if(cb)cb();
+  });
+}
+
+function loadByDate(date,cb){
+  var ckey='date_'+date;
+  var cached=cacheGet(ckey);
+  if(cached){
+    DATA.schedules=DATA.schedules.filter(function(s){return fmtDate(s.date)!==date;});
+    cached.schedules.forEach(function(s){DATA.schedules.push(s);});
+    DATA.emergencyLogs=DATA.emergencyLogs.filter(function(e){return fmtDate(e.date)!==date;});
+    (cached.emergencyLogs||[]).forEach(function(e){DATA.emergencyLogs.push(e);});
+    if(cb)cb();return;
+  }
+  apiGet({action:'getByDate',date:date},function(data){
+    var scheds=(data&&data.schedules)||[];
+    scheds.forEach(function(s){s.date=fmtDate(s.date);});
+    DATA.schedules=DATA.schedules.filter(function(s){return fmtDate(s.date)!==date;});
+    scheds.forEach(function(s){DATA.schedules.push(s);});
+    var emLogs=(data&&data.emergencyLogs)||[];
+    DATA.emergencyLogs=DATA.emergencyLogs.filter(function(e){return fmtDate(e.date)!==date;});
+    emLogs.forEach(function(e){DATA.emergencyLogs.push(e);});
+    cacheSet(ckey,{schedules:scheds,emergencyLogs:emLogs},5);
+    if(cb)cb();
+  });
+}
+
+function loadByMonth(year,month,cb){
+  var ckey='month_'+year+'_'+month;
+  var cached=cacheGet(ckey);
+  if(cached){DATA.monthSchedules=cached.schedules;DATA.monthEmLogs=cached.emergencyLogs;if(cb)cb();return;}
+  apiGet({action:'getByMonth',year:year,month:month},function(data){
+    var scheds=(data&&data.schedules)||[];
+    scheds.forEach(function(s){s.date=fmtDate(s.date);});
+    DATA.monthSchedules=scheds;
+    DATA.monthEmLogs=(data&&data.emergencyLogs)||[];
+    cacheSet(ckey,{schedules:scheds,emergencyLogs:DATA.monthEmLogs},5);
+    if(cb)cb();
+  });
+}
+
 // ══ Sheets API ══
 function apiGet(params, cb){
   var url=SHEETS_URL+'?'+Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
@@ -825,48 +894,18 @@ function initApp(){
   goPage('dashboard',document.querySelector('.nav-item'));
 
   if(SHEETS_URL){
-    dbg('initApp: 開始載入 Sheets 資料');
-    var _t=setTimeout(function(){
-      dbg('initApp: 連線逾時！');
-      showToast('⚠️ 連線逾時，使用本地資料');
+    var td=today();
+    // 步驟1：先載入刀房+使用者（小資料，很快）
+    loadBase(function(){
       populateDrSelect();populateORSelect();
-      renderDashboard();renderList();renderStats();
       if(isAdmin(CU))renderAdmin();
-    },10000);
-    apiGet({action:'getAll'},function(data){
-      clearTimeout(_t);
-      dbg('API回應: status='+(data&&data.status)+' ors='+(data&&data.ors&&data.ors.length));
-      if(data){
-        if(data.users&&data.users.length){
-          var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
-          if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
-          DATA.users=data.users;
-        }
-        if(data.schedules&&data.schedules.length>=0){
-          data.schedules.forEach(function(s){s.date=fmtDate(s.date);});
-          DATA.schedules=data.schedules;
-        }
-        if(data.ors&&data.ors.length){
-          DATA.ors=data.ors;
-        }
-        if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
-        if(data.logs)DATA.logs=data.logs;
-        var dates2=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
-        var td2=today();var best2=td2;
-        if(dates2.length){
-          var f2=dates2.filter(function(d){return d>=td2;}).sort();
-          var p2=dates2.filter(function(d){return d<td2;}).sort().reverse();
-          if(f2.length)best2=f2[0];else if(p2.length)best2=p2[0];
-        }
-        document.getElementById('dash-date').value=best2;
+      showToast('✓ 基本資料已載入');
+      // 步驟2：同時載入今天的排程
+      loadByDate(td,function(){
+        document.getElementById('dash-date').value=td;
+        renderDashboard();
         showToast('✓ 資料已同步');
-      }
-      dbg('render前: ors='+DATA.ors.length+' sched='+DATA.schedules.length);
-      populateDrSelect();populateORSelect();
-      renderDashboard();
-      dbg('renderDashboard完成');
-      renderList();renderStats();
-      if(isAdmin(CU))renderAdmin();
+      });
     });
   }else{
     populateDrSelect();populateORSelect();
@@ -880,19 +919,17 @@ function shiftDate(d){
   var cur=new Date(document.getElementById('dash-date').value);
   if(isNaN(cur.getTime()))cur=new Date();
   cur.setDate(cur.getDate()+d);
-  document.getElementById('dash-date').value=fmtDate(cur);
-  renderDashboard();
+  var newDate=fmtDate(cur);
+  document.getElementById('dash-date').value=newDate;
+  loadByDate(newDate,function(){renderDashboard();});
 }
 
-function loadAndRenderDashboard(){ apiGet({action:'getAll'},function(data){ if(data){
-      if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-      if(data.ors&&data.ors.length){DATA.ors=data.ors;}
-      if(data.users&&data.users.length)DATA.users=data.users;
-      if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
-      populateDrSelect();populateORSelect();
-    }
+function loadAndRenderDashboard(){
+  var date=document.getElementById('dash-date').value||today();
+  invalidateCache(date);
+  loadByDate(date,function(){
+    renderDashboard();
     showToast('✓ 已更新');
-    renderDashboard();renderList();renderStats();
   });
 }
 
@@ -1241,10 +1278,11 @@ function doSubmit(p){
     doctor:p.dr,opname:p.op,patname:p.pat,chartno:p.chart,note:p.note,
     emergency:p.em?'true':'false',createdBy:CU.code});
   showToast(p.em?'🚨 急診插刀已記錄':'✓ 排程已新增');
+  invalidateCache(p.date); // 清除該日期快取
   clearForm();
-  renderDashboard();renderList();renderStats();
-  // 更新刀表日期到新排程日期
   document.getElementById('dash-date').value=p.date;
+  renderDashboard();
+  DATA._listLoaded=false; // 強制列表重新載入
 }
 
 // ══ 排程列表 ══
@@ -1408,8 +1446,10 @@ function confirmDel(){
       emergencyDoctor:dr?dr.name:s.doctor,emergencyOpname:s.opname});
   }
   apiSend({action:'deleteSchedule',id:pendingDel,actor:CU.code});
+  if(s)invalidateCache(fmtDate(s.date));
   showToast('✓ 已刪除');
   closeModal('del-modal');pendingDel=null;
+  DATA._listLoaded=false;
   renderDashboard();renderList();renderStats();
 }
 function exportCSV(){
@@ -1448,7 +1488,8 @@ function renderStats(){
   var tyEl=document.getElementById('tgt-year');
   if(tmEl)tmEl.value=tm;
   if(tyEl)tyEl.value=ty;
-  var mo=DATA.schedules.filter(function(s){var d=new Date(fmtDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  // 使用本月專用資料（loadByMonth 載入），或回退到 DATA.schedules
+  var mo=DATA.monthSchedules||DATA.schedules.filter(function(s){var d=new Date(fmtDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var yr=DATA.schedules.filter(function(s){return new Date(fmtDate(s.date)).getFullYear()===now.getFullYear();});
   var moEm=mo.filter(function(s){return s.emergency;});
   var sg2=document.getElementById('stat-grid-2');
@@ -1465,7 +1506,7 @@ function renderStats(){
   var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return String(s.or)===String(o.id);}).length;}).concat([0]));
   var orEl=document.getElementById('or-bars');
   if(orEl)orEl.innerHTML=openOrs.length?openOrs.map(function(or){var c=mo.filter(function(s){return String(s.or)===String(or.id);}).length;return bar(or.name,c,mx2,'');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無刀房資料</div>';
-  var moEmLogs=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var moEmLogs=DATA.monthEmLogs||DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var bc={};moEmLogs.forEach(function(e){bc[e.blockedDoctor]=(bc[e.blockedDoctor]||0)+1;});
   var ba=Object.keys(bc).map(function(k){return{name:k,count:bc[k]};}).sort(function(a,b){return b.count-a.count;});
   var mx3=ba.length?ba[0].count:0;
@@ -1591,11 +1632,22 @@ function goPage(id,btn){
   var t=PAGE_TITLES[id]||id;
   document.getElementById('topbar-title').textContent=t;
   document.getElementById('mob-title').textContent=t;
-  if(id==='list')renderList();
+  if(id==='list'){
+    // 排程列表需要更多資料，用 getAll 但只載入一次
+    if(!DATA._listLoaded){
+      apiGet({action:'getAll'},function(data){
+        if(data&&data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
+        if(data&&data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+        DATA._listLoaded=true;
+        renderList();
+      });
+    }else{renderList();}
+  }
   if(id==='stats'){
-    // 確保用最新資料 render
-    if(DATA.schedules.length||DATA.ors.length)renderStats();
-    else renderStats(); // 即使空也要 render（顯示 0）
+    var now=new Date();
+    loadByMonth(now.getFullYear(),now.getMonth()+1,function(){
+      renderStats();
+    });
   }
   if(id==='admin')renderAdmin();
   if(id==='dashboard')renderDashboard();
