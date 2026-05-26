@@ -804,6 +804,38 @@ function initApp(){
   renderList();
   renderStats();
   goPage('dashboard',document.querySelector('.nav-item'));
+
+  // 登入後從 Sheets 載入最新資料
+  if(SHEETS_URL){
+    loading(true);
+    apiGet({action:'getAll'},function(data){
+      loading(false);
+      if(data&&data.status==='ok'){
+        if(data.users&&data.users.length){
+          var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
+          if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
+          DATA.users=data.users;
+        }
+        if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
+        if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+        if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
+        if(data.logs)DATA.logs=data.logs;
+        // 更新日期到最近有資料的日期
+        var dates2=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
+        var td2=today();var best2=td2;
+        if(dates2.length){
+          var f2=dates2.filter(function(d){return d>=td2;}).sort();
+          var p2=dates2.filter(function(d){return d<td2;}).sort().reverse();
+          if(f2.length)best2=f2[0];else if(p2.length)best2=p2[0];
+        }
+        document.getElementById('dash-date').value=best2;
+        populateDrSelect();populateORSelect();
+        renderDashboard();renderList();renderStats();
+        if(isAdmin(CU))renderAdmin();
+        showToast('✓ 資料已同步');
+      }
+    });
+  }
 }
 
 // ══ 今日刀表 ══
