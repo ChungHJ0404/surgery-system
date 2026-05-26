@@ -618,7 +618,7 @@ function minToTime(m){
 // 計算某刀房某天的最早可用開始時間
 function earliestAvailable(orId, date){
   var daySchedules=DATA.schedules.filter(function(s){
-    return Number(s.or)===Number(orId)&&fmtDate(s.date)===date&&!s.emergency;
+    return String(s.or)===String(orId)&&fmtDate(s.date)===date&&!s.emergency;
   });
   if(!daySchedules.length)return timeToMin('07:00');
   var latestEnd=Math.max.apply(null,daySchedules.map(function(s){
@@ -631,7 +631,7 @@ function findConflicts(orId, date, startMin, durHr, excludeId){
   var endMin=startMin+Math.round(parseFloat(durHr||1)*60);
   return DATA.schedules.filter(function(s){
     if(excludeId&&s.id===excludeId)return false;
-    if(Number(s.or)!==Number(orId)||fmtDate(s.date)!==date)return false;
+    if(String(s.or)!==String(orId)||fmtDate(s.date)!==date)return false;
     var sStart=timeToMin(s.session);
     var sEnd=sStart+Math.round(parseFloat(s.duration||1)*60);
     return startMin<sEnd&&endMin>sStart;
@@ -664,7 +664,7 @@ function showToast(msg){var t=document.getElementById('toast');t.textContent=msg
 function loading(show){var o=document.getElementById('loading-overlay');if(o)o.style.display=show?'flex':'none';}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
-function getOR(id){return DATA.ors.find(function(o){return Number(o.id)===Number(id);});}
+function getOR(id){return DATA.ors.find(function(o){return String(o.id)===String(id);});}
 function getUser(code){return DATA.users.find(function(u){return u.code===code;});}
 
 // ══ Sheets API ══
@@ -688,7 +688,7 @@ function loadAll(cb){
     loading(false);
     if(!data||data.status!=='ok'){showToast('⚠️ 無法連線 Sheets');if(cb)cb();return;}
     if(data.schedules)data.schedules.forEach(function(s){s.date=fmtDate(s.date);});
-    if(data.ors)data.ors.forEach(function(o){o.id=Number(o.id);});
+    
     // 合併保留預設 admin
     if(data.users&&data.users.length){
       var adminExists=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
@@ -754,7 +754,7 @@ function doLogin(){
         DATA.users=data.users;
       }
       if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-      if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+      if(data.ors&&data.ors.length){DATA.ors=data.ors;}
       if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
       if(data.logs)DATA.logs=data.logs;
     }
@@ -864,7 +864,7 @@ function initApp(){
           DATA.users=data.users;
         }
         if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-        if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+        if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=o.id;});DATA.ors=data.ors;}
         if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
         if(data.logs)DATA.logs=data.logs;
         var dates2=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
@@ -905,7 +905,7 @@ function loadAndRenderDashboard(){
     loading(false);
     if(data&&data.status==='ok'){
       if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-      if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
+      if(data.ors&&data.ors.length){DATA.ors=data.ors;}
       if(data.users&&data.users.length)DATA.users=data.users;
       if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
       populateDrSelect();populateORSelect();
@@ -934,7 +934,7 @@ function renderDashboard(){
   DATA.ors.forEach(function(or){
     var card=document.createElement('div');
     card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;';
-    var orSched=ts.filter(function(s){return Number(s.or)===or.id;}).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
+    var orSched=ts.filter(function(s){return String(s.or)===String(or.id);}).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
     var totalHr=orSched.reduce(function(acc,s){return acc+parseFloat(s.duration||0);},0);
     var headBg=or.open?'var(--green-bg)':'var(--gray-bg)';
     var headColor=or.open?'var(--green)':'var(--text-3)';
@@ -1098,7 +1098,7 @@ function checkSlot(){
 
   // 今日該刀房已排的手術
   var dayScheds=DATA.schedules.filter(function(s){
-    return Number(s.or)===Number(orId)&&fmtDate(s.date)===date;
+    return String(s.or)===String(orId)&&fmtDate(s.date)===date;
   }).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
 
   var summaryHtml='';
@@ -1321,7 +1321,7 @@ function openEdit(id){
   DATA.ors.forEach(function(or){
     var o=document.createElement('option');
     o.value=or.id;o.textContent=or.name+(or.open?'':'（停用中）');
-    if(Number(s.or)===or.id)o.selected=true;
+    if(String(s.or)===String(or.id))o.selected=true;
     eor.appendChild(o);
   });
   // 填醫師選單
@@ -1439,7 +1439,7 @@ function renderStats(){
   var mx=Math.max.apply(null,drs.map(function(d){return mo.filter(function(s){return s.doctor===d.code;}).length;}).concat([0]));
   document.getElementById('dr-bars').innerHTML=drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return bar(dr.name+' ('+dr.code+')',c,mx,'');}).join('');
   var openOrs=DATA.ors.filter(function(o){return o.open;});
-  var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return Number(s.or)===o.id;}).length;}).concat([0]));
+  var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return String(s.or)===String(o.id);}).length;}).concat([0]));
   document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return Number(s.or)===or.id;}).length;return bar(or.name,c,mx2,'');}).join('');
   var moEmLogs=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var bc={};moEmLogs.forEach(function(e){bc[e.blockedDoctor]=(bc[e.blockedDoctor]||0)+1;});
@@ -1478,7 +1478,7 @@ function buildORBlock(or){
   tg.querySelector('input').addEventListener('change',function(e){if(!e.target.checked){showClosePanel(or.id,block);e.target.checked=true;}else reopenOR(or.id);});
   var delBtn=document.createElement('button');delBtn.className='btn btn-danger btn-sm';delBtn.textContent='刪除';
   delBtn.onclick=function(){
-    var hasSched=DATA.schedules.find(function(s){return Number(s.or)===or.id;});
+    var hasSched=DATA.schedules.find(function(s){return String(s.or)===String(or.id);});
     if(hasSched){showToast('此刀房尚有排程記錄，無法刪除');return;}
     if(!confirm('確定要刪除「'+or.name+'」？'))return;
     DATA.ors=DATA.ors.filter(function(o){return o.id!==or.id;});
