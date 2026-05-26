@@ -1367,23 +1367,9 @@ function syncMobNav(id){
   });
 }
 
-// ══ 初始載入 ══
-// 背景靜默載入，不顯示 loading，讓使用者可以直接操作登入畫面
+// ══ 初始化 ══
+// 不做任何 API 呼叫，直接顯示登入畫面
 DATA.users=[{code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()}];
-
-apiGet({action:'getAll'},function(data){
-  if(data&&data.status==='ok'){
-    if(data.users&&data.users.length){
-      var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
-      if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
-      DATA.users=data.users;
-    }
-    if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-    if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
-    if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
-    if(data.logs)DATA.logs=data.logs;
-  }
-});
 </script>
 </body>
 </html>
