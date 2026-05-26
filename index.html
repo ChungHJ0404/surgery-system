@@ -662,7 +662,10 @@ function dispDate(v){var s=fmtDate(v);return s?s.replace(/^\d{4}-/,'').replace('
 function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
 function isAdmin(u){return u&&(u.role==='admin'||u.role==='管理員'||u.role==='管理者');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
-function loading(show){var o=document.getElementById('loading-overlay');if(o)o.style.display=show?'flex':'none';}
+function loading(show){
+  // 不用全畫面遮罩，改用 toast 提示
+  if(show){showToast('⏳ 正在同步資料…');}
+}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function getOR(id){return DATA.ors.find(function(o){return String(o.id)===String(id);});}
@@ -959,12 +962,7 @@ function renderDashboard(){
   var container=document.getElementById('or-container');
   if(!container){alert('ERROR: or-container not found!');return;}
   container.innerHTML='';
-  // 測試用：直接插入一個可見元素
-  var testDiv=document.createElement('div');
-  testDiv.style.cssText='background:red;color:white;padding:10px;margin-bottom:10px;font-size:16px;';
-  testDiv.textContent='TEST: ors='+DATA.ors.length+' schedules='+DATA.schedules.length+' date='+dateVal;
-  container.appendChild(testDiv);
-  if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料（刀房數=0）</div>';return;}
+  if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料</div>';return;}
   var TL_START=7*60,TL_END=22*60,TL_TOTAL=TL_END-TL_START,CUTOFF=18*60;
   var mobile=isMobile();
   DATA.ors.forEach(function(or){
