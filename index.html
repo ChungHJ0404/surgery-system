@@ -225,6 +225,43 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   <div style="font-size:14px;color:var(--text-2);font-weight:500">正在載入資料…</div>
 </div>
 
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal" style="width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">✏️ 編輯排程</div>
+    <div class="form-grid">
+      <div class="form-group"><label>手術日期 *</label><input type="date" id="e-date"></div>
+      <div class="form-group"><label>刀房 *</label><select id="e-or"></select></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>開始時間 *</label><input type="time" id="e-sess"></div>
+      <div class="form-group"><label>手術時長（小時）*</label><input type="number" id="e-dur" min="0.5" max="24" step="0.5"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>主刀醫師 *</label><select id="e-dr"></select></div>
+      <div class="form-group"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>病患姓名</label><input type="text" id="e-pat" placeholder="輸入病患姓名"></div>
+      <div class="form-group"><label>病歷號</label><input type="text" id="e-chart" placeholder="輸入病歷號"></div>
+    </div>
+    <div class="form-grid full">
+      <div class="form-group">
+        <label>術式名稱 *</label>
+        <input type="text" id="e-op" list="op-list" placeholder="選擇或輸入術式名稱" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-grid full">
+      <div class="form-group"><label>備註</label><textarea id="e-note" placeholder="特殊器械需求、術前注意事項…"></textarea></div>
+    </div>
+    <div id="e-banner"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('edit-modal')">取消</button>
+      <button class="btn btn-primary" onclick="submitEdit()">✓ 儲存變更</button>
+    </div>
+  </div>
+</div>
+
 <!-- Delete Modal -->
 <div class="modal-overlay" id="del-modal">
   <div class="modal">
@@ -865,6 +902,13 @@ function loadAndRenderDashboard(){
   });
 }
 
+function canSeePatient(s){
+  // 管理員看全部，自己的排程看全部，其他人顯示 ***
+  return isAdmin(CU)||(s.createdBy&&s.createdBy===CU.code)||(s.doctor&&s.doctor===CU.code);
+}
+function patName(s){return canSeePatient(s)?(s.patname||''):'***';}
+function patChart(s){return canSeePatient(s)?(s.chartno||''):'***';}
+
 function isMobile(){return window.innerWidth<=768;}
 
 function renderDashboard(){
@@ -933,7 +977,7 @@ function renderDashboard(){
           +'<div style="font-size:'+(mobile?'14':'12')+'px;font-weight:600;color:var(--text-2);min-width:'+(mobile?'110':'90')+'px;white-space:nowrap;flex-shrink:0">'+fmtSession(s.session)+' → '+minToTime(em2)+'</div>'
           +'<div style="flex:1;min-width:0">'
           +'<div style="font-size:'+(mobile?'15':'13')+'px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+';">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-          +'<div style="font-size:'+(mobile?'13':'12')+'px;color:var(--text-2);margin-top:3px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
+          +'<div style="font-size:'+(mobile?'13':'12')+'px;color:var(--text-2);margin-top:3px">'+(dr?dr.name:'?')+(canSeePatient(s)&&s.patname?' · 👤 '+s.patname:'')+(canSeePatient(s)&&s.chartno?' · #'+s.chartno:'')+'</div>'
           +'</div>'
           +'<div style="font-size:'+(mobile?'13':'12')+'px;color:var(--text-3);white-space:nowrap;flex-shrink:0">'+s.duration+' hr</div>'
           +'</div>';
@@ -1194,6 +1238,7 @@ function renderList(){
     // 手機版：卡片式
     f.forEach(function(s){
       var dr=getUser(s.doctor),or=getOR(s.or);
+      var canEdit=admin||(s.createdBy===CU.code)||(s.doctor===CU.code);
       var canDel=admin||(s.createdBy===CU.code);
       var indColor=s.emergency?'var(--orange)':'var(--green)';
       var sm=timeToMin(s.session);
@@ -1210,31 +1255,111 @@ function renderList(){
         +'<span style="color:var(--border)">|</span>'
         +'<span>🏥 '+(or?or.name:'?')+'</span>'
         +'</div>'
-        +(s.patname||s.chartno?'<div style="font-size:13px;color:var(--text-3);margin-top:4px">'+(s.patname?'👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>':'')
+        +(canSeePatient(s)&&(s.patname||s.chartno)?'<div style="font-size:13px;color:var(--text-3);margin-top:4px">'+(s.patname?'👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>':'')
         +'</div>'
-        +(canDel?'<button class="btn btn-danger btn-sm" style="padding:6px 12px;flex-shrink:0" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">刪除</button>':'')
+        +'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
+        +(canEdit?'<button class="btn btn-secondary btn-sm" style="padding:6px 12px" onclick="openEdit(\''+s.id+'\')">編輯</button>':'')
+        +(canDel?'<button class="btn btn-danger btn-sm" style="padding:6px 12px" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">刪除</button>':'')
+        +'</div>'
         +'</div></div>';
     });
   }else{
     // 桌面版：表格
-    html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">病患姓名</span><span class="col">病歷號</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:36px"></span></div>';
+    html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">病患姓名</span><span class="col">病歷號</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:72px"></span></div>';
     f.forEach(function(s){
       var dr=getUser(s.doctor),or=getOR(s.or);
+      var canEdit=admin||(s.createdBy===CU.code)||(s.doctor===CU.code);
       var canDel=admin||(s.createdBy===CU.code);
       html+='<div class="list-row">'
         +'<div class="col-xl"><div style="font-weight:600">'+(s.emergency?'🚨 ':'')+s.opname+'</div></div>'
         +'<div class="col">'+(dr?dr.name:'?')+'</div>'
         +'<div class="col">'+dispDate(s.date)+'<br><span style="font-size:12px">'+fmtSession(s.session)+'</span></div>'
-        +'<div class="col">'+(s.patname?'<div style="font-size:13px">'+s.patname+'</div>':'—')+'</div>'
-        +'<div class="col">'+(s.chartno?'<div style="font-size:13px">#'+s.chartno+'</div>':'—')+'</div>'
+        +'<div class="col">'+(canSeePatient(s)&&s.patname?'<div style="font-size:13px">'+s.patname+'</div>':s.patname?'<div style="font-size:13px;color:var(--text-3)">***</div>':'—')+'</div>'
+        +'<div class="col">'+(canSeePatient(s)&&s.chartno?'<div style="font-size:13px">#'+s.chartno+'</div>':s.chartno?'<div style="font-size:13px;color:var(--text-3)">***</div>':'—')+'</div>'
         +'<div class="col">'+(or?or.name:'?')+'</div>'
         +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
-        +'<div style="width:36px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:3px 8px" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">✕</button>':'')+'</div>'
+        +'<div style="display:flex;gap:4px;width:72px;justify-content:flex-end">'
+        +(canEdit?'<button class="btn btn-secondary btn-sm" style="padding:3px 8px" onclick="openEdit(\''+s.id+'\')">✏️</button>':'')
+        +(canDel?'<button class="btn btn-danger btn-sm" style="padding:3px 8px" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">✕</button>':'')
+        +'</div>'
         +'</div>';
     });
   }
   document.getElementById('list-body').innerHTML=html;
 }
+// ══ 排程編輯 ══
+var editingId=null;
+
+function openEdit(id){
+  var s=DATA.schedules.find(function(x){return x.id===id;});
+  if(!s){showToast('找不到排程');return;}
+  editingId=id;
+  // 填入現有資料
+  document.getElementById('e-date').value=fmtDate(s.date);
+  document.getElementById('e-sess').value=fmtSession(s.session);
+  document.getElementById('e-dur').value=s.duration;
+  document.getElementById('e-pat').value=s.patname||'';
+  document.getElementById('e-chart').value=s.chartno||'';
+  document.getElementById('e-op').value=s.opname||'';
+  document.getElementById('e-note').value=s.note||'';
+  document.getElementById('e-banner').innerHTML='';
+  // 填刀房選單
+  var eor=document.getElementById('e-or');eor.innerHTML='';
+  DATA.ors.forEach(function(or){
+    var o=document.createElement('option');
+    o.value=or.id;o.textContent=or.name+(or.open?'':'（停用中）');
+    if(Number(s.or)===or.id)o.selected=true;
+    eor.appendChild(o);
+  });
+  // 填醫師選單
+  var edr=document.getElementById('e-dr');edr.innerHTML='';
+  DATA.users.filter(function(u){return !isAdmin(u);}).forEach(function(u){
+    var o=document.createElement('option');
+    o.value=u.code;o.textContent=u.name+' ('+u.code+')';
+    if(s.doctor===u.code)o.selected=true;
+    edr.appendChild(o);
+  });
+  openModal('edit-modal');
+}
+
+function submitEdit(){
+  var s=DATA.schedules.find(function(x){return x.id===editingId;});
+  if(!s){showToast('找不到排程');return;}
+  var date=document.getElementById('e-date').value;
+  var orId=parseInt(document.getElementById('e-or').value);
+  var sess=document.getElementById('e-sess').value;
+  var dur=parseFloat(document.getElementById('e-dur').value);
+  var dr=document.getElementById('e-dr').value;
+  var op=document.getElementById('e-op').value.trim();
+  var pat=document.getElementById('e-pat').value.trim();
+  var chart=document.getElementById('e-chart').value.trim();
+  var note=document.getElementById('e-note').value.trim();
+  var banner=document.getElementById('e-banner');banner.innerHTML='';
+  if(!date||!orId||!sess||!op){showToast('請填寫所有必填欄位');return;}
+  if(!dur||dur<=0){showToast('請填寫有效的手術時長');return;}
+  var startMin=timeToMin(sess);
+  if(startMin>timeToMin('18:00')){banner.innerHTML='<div class="banner banner-warn">⛔ 開始時間不能晚於 18:00</div>';return;}
+  // 衝突檢查（排除自己）
+  var conflicts=findConflicts(orId,date,startMin,dur,editingId);
+  if(conflicts.length&&!s.emergency){
+    var cdr=getUser(conflicts[0].doctor);
+    var cEnd=timeToMin(conflicts[0].session)+Math.round(parseFloat(conflicts[0].duration||1)*60);
+    banner.innerHTML='<div class="banner banner-warn">⚠️ 與「'+conflicts[0].opname+'」（'+(cdr?cdr.name:'?')+'，'+fmtSession(conflicts[0].session)+'–'+minToTime(cEnd)+'）衝突</div>';
+    return;
+  }
+  // 更新本地資料
+  s.date=date;s.or=orId;s.session=sess;s.duration=dur;
+  s.doctor=dr;s.opname=op;s.patname=pat;s.chartno=chart;s.note=note;
+  // 同步到 Sheets（刪除舊的，新增新的）
+  apiSend({action:'deleteSchedule',id:editingId,actor:CU.code});
+  apiSend({action:'addSchedule',date:date,or:orId,session:sess,duration:dur,
+    doctor:dr,opname:op,patname:pat,chartno:chart,note:note,
+    emergency:s.emergency?'true':'false',createdBy:s.createdBy||CU.code});
+  showToast('✓ 排程已更新');
+  closeModal('edit-modal');editingId=null;
+  renderDashboard();renderList();renderStats();
+}
+
 function askDel(id,name){
   pendingDel=id;
   document.getElementById('del-modal-msg').textContent='確定要刪除「'+name+'」？';
@@ -1270,7 +1395,7 @@ function exportCSV(){
     return true;
   });
   var rows=[['手術日期','時段','刀房','代號','醫師姓名','術式名稱','病患姓名','病歷號','預估時間(hr)','類型','備註']];
-  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);rows.push([fmtDate(s.date),s.session,or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,s.patname||'',s.chartno||'',s.duration,s.emergency?'急診':'一般',s.note||'']);});
+  f.forEach(function(s){var dr=getUser(s.doctor),or=getOR(s.or);var canSee=canSeePatient(s);rows.push([fmtDate(s.date),fmtSession(s.session),or?or.name:'?',s.doctor,dr?dr.name:'?',s.opname,canSee?(s.patname||''):'***',canSee?(s.chartno||''):'***',s.duration,s.emergency?'急診':'一般',s.note||'']);});
   var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='手術排程_'+today()+'.csv';a.click();
