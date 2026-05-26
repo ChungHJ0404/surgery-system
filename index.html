@@ -363,10 +363,12 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
       <div class="page active" id="page-dashboard">
         <div class="stat-grid" id="stat-grid"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-          <button class="btn btn-secondary btn-sm" onclick="shiftDate(-1)">‹ 前一天</button>
-          <input type="date" id="dash-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;outline:none;font-weight:500" onchange="loadAndRenderDashboard()">
-          <button class="btn btn-secondary btn-sm" onclick="shiftDate(1)">後一天 ›</button>
-          <button class="btn btn-primary btn-sm" onclick="loadAndRenderDashboard()" style="margin-left:auto">↻ 重新整理</button>
+          <div style="display:flex;align-items:center;gap:6px;flex:1;">
+            <button class="btn btn-secondary btn-sm" onclick="shiftDate(-1)" style="flex-shrink:0">‹</button>
+            <input type="date" id="dash-date" style="flex:1;min-width:0;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;outline:none;font-weight:500" onchange="loadAndRenderDashboard()">
+            <button class="btn btn-secondary btn-sm" onclick="shiftDate(1)" style="flex-shrink:0">›</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="loadAndRenderDashboard()" style="flex-shrink:0">↻ 重新整理</button>
         </div>
         <div id="or-container"></div>
         <div class="card">
@@ -863,109 +865,87 @@ function loadAndRenderDashboard(){
   });
 }
 
+function isMobile(){return window.innerWidth<=768;}
+
 function renderDashboard(){
   var dateVal=document.getElementById('dash-date').value;
   var ts=DATA.schedules.filter(function(s){return fmtDate(s.date)===dateVal;});
   var container=document.getElementById('or-container');container.innerHTML='';
   if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料</div>';return;}
-
-  // 時間軸設定
-  var TL_START=7*60;  // 07:00
-  var TL_END=22*60;   // 22:00
-  var TL_TOTAL=TL_END-TL_START; // 900 分鐘
-  var CUTOFF=18*60;   // 18:00 截止線
-
+  var TL_START=7*60,TL_END=22*60,TL_TOTAL=TL_END-TL_START,CUTOFF=18*60;
+  var mobile=isMobile();
   DATA.ors.forEach(function(or){
     var card=document.createElement('div');
     card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;';
-
-    // 刀房標題
+    var orSched=ts.filter(function(s){return Number(s.or)===or.id;}).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
+    var totalHr=orSched.reduce(function(acc,s){return acc+parseFloat(s.duration||0);},0);
     var headBg=or.open?'var(--green-bg)':'var(--gray-bg)';
     var headColor=or.open?'var(--green)':'var(--text-3)';
-    var orSchedules=ts.filter(function(s){return Number(s.or)===or.id;}).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
-    var totalHr=orSchedules.reduce(function(acc,s){return acc+parseFloat(s.duration||0);},0);
-
-    card.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:'+headBg+';border-bottom:1px solid var(--border-light)">'
+    card.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+headBg+';border-bottom:1px solid var(--border-light)">'
       +'<span style="width:8px;height:8px;border-radius:50%;background:'+(or.open?'var(--green)':'var(--text-3)')+';flex-shrink:0;display:inline-block"></span>'
-      +'<span style="font-size:14px;font-weight:700;color:'+headColor+'">'+or.name+'</span>'
-      +(or.open&&orSchedules.length?'<span style="font-size:12px;color:var(--text-2);margin-left:4px">· '+orSchedules.length+' 台，共 '+totalHr+' 小時</span>':'')
+      +'<span style="font-size:'+(mobile?'15':'14')+'px;font-weight:700;color:'+headColor+'">'+or.name+'</span>'
+      +(or.open&&orSched.length?'<span style="font-size:12px;color:var(--text-2);margin-left:4px">· '+orSched.length+' 台 '+totalHr+'hr</span>':'')
       +(or.open?'<span style="margin-left:auto;font-size:11px;color:var(--green);font-weight:500;background:var(--surface);padding:2px 8px;border-radius:20px">開放中</span>'
                :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
       +'</div>';
-
     if(!or.open){container.appendChild(card);return;}
-
-    // 時間軸區域
-    var tlWrap=document.createElement('div');
-    tlWrap.style.cssText='padding:12px 16px 14px;';
-
-    // 時間刻度標籤
-    var labels='<div style="position:relative;height:18px;margin-bottom:4px;">';
-    for(var h=7;h<=22;h+=1){
-      var pct=((h*60-TL_START)/TL_TOTAL*100).toFixed(2);
-      if(h%2===0||h===7||h===22){
-        labels+='<span style="position:absolute;left:'+pct+'%;font-size:10px;color:var(--text-3);transform:translateX(-50%)">'
-          +String(h).padStart(2,'0')+':00</span>';
-      }
-    }
-    labels+='</div>';
-
-    // 時間軸主體
-    var tlBar='<div style="position:relative;height:36px;background:var(--bg);border-radius:6px;overflow:visible;">';
-
-    // 18:00 截止線
-    var cutoffPct=((CUTOFF-TL_START)/TL_TOTAL*100).toFixed(2);
-    tlBar+='<div style="position:absolute;left:'+cutoffPct+'%;top:0;bottom:0;width:2px;background:var(--amber);z-index:3;opacity:.7;">'
-      +'<div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:var(--amber);color:#fff;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap">18:00</div>'
-      +'</div>';
-
-    // 每台手術色塊
-    orSchedules.forEach(function(s){
-      var startM=timeToMin(s.session);
-      var endM=startM+Math.round(parseFloat(s.duration||1)*60);
-      var left=((startM-TL_START)/TL_TOTAL*100).toFixed(2);
-      var width=((endM-startM)/TL_TOTAL*100).toFixed(2);
-      var bg=s.emergency?'var(--orange)':'var(--green)';
-      var dr=getUser(s.doctor);
-      var label=s.opname.length>20?s.opname.substring(0,18)+'…':s.opname;
-      tlBar+='<div title="'+s.opname+'\n'+(dr?dr.name:'?')+'\n'+s.session+'–'+minToTime(endM)+' ('+s.duration+'hr)" '
-        +'style="position:absolute;left:'+left+'%;width:'+width+'%;height:100%;background:'+bg+';border-radius:4px;z-index:2;cursor:default;box-sizing:border-box;border:1px solid rgba(0,0,0,.1);">'
-        +'<div style="padding:2px 6px;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:center;">'
-        +'<div style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+label+'</div>'
-        +(parseFloat(width)>15?'<div style="font-size:10px;color:rgba(255,255,255,.85);white-space:nowrap">'+(dr?dr.name:'?')+'</div>':'')
-        +'</div></div>';
-    });
-    tlBar+='</div>';
-
-    // 手術列表
-    var listHtml='';
-    if(orSchedules.length){
-      listHtml='<div style="margin-top:12px;border-top:1px solid var(--border-light);padding-top:10px;display:flex;flex-direction:column;gap:6px;">';
-      orSchedules.forEach(function(s){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='padding:12px 14px 14px;';
+    var innerHtml='';
+    if(!mobile){
+      var labels='<div style="position:relative;height:20px;margin-bottom:6px;">';
+      [7,9,11,13,15,17,18,20,22].forEach(function(h){
+        var pct=((h*60-TL_START)/TL_TOTAL*100).toFixed(2);
+        labels+='<span style="position:absolute;left:'+pct+'%;font-size:10px;color:var(--text-3);transform:translateX(-50%)">'+String(h).padStart(2,'0')+':00</span>';
+      });
+      labels+='</div>';
+      var cutoffPct=((CUTOFF-TL_START)/TL_TOTAL*100).toFixed(2);
+      var tlBar='<div style="position:relative;height:38px;background:var(--bg);border-radius:6px;overflow:visible;margin-bottom:10px;">'
+        +'<div style="position:absolute;left:'+cutoffPct+'%;top:0;bottom:0;width:2px;background:var(--amber);z-index:3;opacity:.8;">'
+        +'<div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:var(--amber);color:#fff;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap">18:00</div>'
+        +'</div>';
+      orSched.forEach(function(s){
+        var sm=timeToMin(s.session);
+        var em2=sm+Math.round(parseFloat(s.duration||1)*60);
+        var lft=((sm-TL_START)/TL_TOTAL*100).toFixed(2);
+        var wid=((em2-sm)/TL_TOTAL*100).toFixed(2);
+        var bg=s.emergency?'var(--orange)':'var(--green)';
         var dr=getUser(s.doctor);
-        var startM=timeToMin(s.session);
-        var endM=startM+Math.round(parseFloat(s.duration||1)*60);
+        var lbl=s.opname.length>18?s.opname.substring(0,16)+'…':s.opname;
+        tlBar+='<div title="'+s.opname+'\n'+(dr?dr.name:'?')+'\n'+s.session+'→'+minToTime(em2)+' ('+s.duration+'hr)"'
+          +' style="position:absolute;left:'+lft+'%;width:'+wid+'%;height:100%;background:'+bg+';border-radius:4px;z-index:2;box-sizing:border-box;border:1px solid rgba(0,0,0,.1);">'
+          +'<div style="padding:2px 6px;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:center;">'
+          +'<div style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+lbl+'</div>'
+          +(parseFloat(wid)>12?'<div style="font-size:10px;color:rgba(255,255,255,.85)">'+(dr?dr.name:'?')+'</div>':'')
+          +'</div></div>';
+      });
+      tlBar+='</div>';
+      innerHtml=labels+tlBar;
+    }
+    var listHtml='<div style="display:flex;flex-direction:column;gap:'+(mobile?'10':'7')+'px;">';
+    if(orSched.length){
+      orSched.forEach(function(s){
+        var dr=getUser(s.doctor);
+        var sm=timeToMin(s.session);
+        var em2=sm+Math.round(parseFloat(s.duration||1)*60);
         var indColor=s.emergency?'var(--orange)':'var(--green)';
-        listHtml+='<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 10px;background:var(--bg);border-radius:var(--radius);border-left:3px solid '+indColor+'">'
-          +'<div style="font-size:12px;font-weight:600;color:var(--text-2);min-width:90px;white-space:nowrap">'+s.session+' → '+minToTime(endM)+'</div>'
+        listHtml+='<div style="display:flex;align-items:flex-start;gap:12px;padding:'+(mobile?'12px':'8px 10px')+';background:var(--bg);border-radius:var(--radius);border-left:3px solid '+indColor+'">'
+          +'<div style="font-size:'+(mobile?'14':'12')+'px;font-weight:600;color:var(--text-2);min-width:'+(mobile?'110':'90')+'px;white-space:nowrap;flex-shrink:0">'+fmtSession(s.session)+' → '+minToTime(em2)+'</div>'
           +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:13px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+'">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-          +'<div style="font-size:12px;color:var(--text-2)">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
+          +'<div style="font-size:'+(mobile?'15':'13')+'px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+';">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+          +'<div style="font-size:'+(mobile?'13':'12')+'px;color:var(--text-2);margin-top:3px">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
           +'</div>'
-          +'<div style="font-size:12px;color:var(--text-3);white-space:nowrap">'+s.duration+' hr</div>'
+          +'<div style="font-size:'+(mobile?'13':'12')+'px;color:var(--text-3);white-space:nowrap;flex-shrink:0">'+s.duration+' hr</div>'
           +'</div>';
       });
-      listHtml+='</div>';
     }else{
-      listHtml='<div style="margin-top:10px;font-size:13px;color:var(--text-3);text-align:center;padding:6px 0">今日無排程</div>';
+      listHtml+='<div style="font-size:13px;color:var(--text-3);text-align:center;padding:10px 0">今日無排程</div>';
     }
-
-    tlWrap.innerHTML=labels+tlBar+listHtml;
-    card.appendChild(tlWrap);
+    listHtml+='</div>';
+    wrap.innerHTML=innerHtml+listHtml;
+    card.appendChild(wrap);
     container.appendChild(card);
   });
-
-  // 統計
   var em=ts.filter(function(s){return s.emergency;}).length;
   var cc=DATA.ors.filter(function(o){return !o.open;}).length;
   var now=new Date();
@@ -977,7 +957,6 @@ function renderDashboard(){
     sc('本月手術','--green',mo,'台');
   renderEmStats();
 }
-function sc(l,c,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="color:var('+c+')">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
 
 function renderEmStats(){
   var now=new Date();
@@ -1209,8 +1188,35 @@ function renderList(){
   }).sort(function(a,b){var da=fmtDate(a.date),db=fmtDate(b.date);return da>db?1:da<db?-1:0;});
   var admin=isAdmin(CU);
   var html='';
-  if(!f.length){html='<div style="padding:20px;text-align:center;color:var(--text-3)">此期間沒有排程</div>';}
-  else{
+  if(!f.length){
+    html='<div style="padding:20px;text-align:center;color:var(--text-3)">此期間沒有排程</div>';
+  }else if(isMobile()){
+    // 手機版：卡片式
+    f.forEach(function(s){
+      var dr=getUser(s.doctor),or=getOR(s.or);
+      var canDel=admin||(s.createdBy===CU.code);
+      var indColor=s.emergency?'var(--orange)':'var(--green)';
+      var sm=timeToMin(s.session);
+      var em2=sm+Math.round(parseFloat(s.duration||1)*60);
+      html+='<div style="padding:14px;border-bottom:1px solid var(--border-light);">'
+        +'<div style="display:flex;align-items:flex-start;gap:12px;">'
+        +'<div style="width:3px;border-radius:2px;align-self:stretch;background:'+indColor+';flex-shrink:0;min-height:50px;"></div>'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-size:15px;font-weight:700;color:'+(s.emergency?'var(--orange)':'var(--text)')+';margin-bottom:5px">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--text-2);">'
+        +'<span>👨‍⚕️ '+(dr?dr.name:'?')+'</span>'
+        +'<span style="color:var(--border)">|</span>'
+        +'<span>📅 '+dispDate(s.date)+' '+fmtSession(s.session)+'→'+minToTime(em2)+'</span>'
+        +'<span style="color:var(--border)">|</span>'
+        +'<span>🏥 '+(or?or.name:'?')+'</span>'
+        +'</div>'
+        +(s.patname||s.chartno?'<div style="font-size:13px;color:var(--text-3);margin-top:4px">'+(s.patname?'👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>':'')
+        +'</div>'
+        +(canDel?'<button class="btn btn-danger btn-sm" style="padding:6px 12px;flex-shrink:0" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">刪除</button>':'')
+        +'</div></div>';
+    });
+  }else{
+    // 桌面版：表格
     html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">病患姓名</span><span class="col">病歷號</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:36px"></span></div>';
     f.forEach(function(s){
       var dr=getUser(s.doctor),or=getOR(s.or);
