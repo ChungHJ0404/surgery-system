@@ -554,6 +554,17 @@ var DATA={schedules:[],users:[],ors:[],emergencyLogs:[],logs:[]};
 var pendingDel=null, pendingEM=null;
 var SESSIONS=['08:00','10:00','13:00','15:00'];
 
+function fmtSession(v){
+  if(!v)return '';
+  var s=String(v).trim();
+  if(/^\d{2}:\d{2}$/.test(s))return s;
+  if(/^\d{1}:\d{2}$/.test(s))return '0'+s;
+  // 如果是奇怪的日期字串，嘗試抽出時間
+  var m=s.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+  if(m)return String(m[1]).padStart(2,'0')+':'+m[2];
+  return s;
+}
+
 // 把時間字串轉成分鐘數（08:30 → 510）
 function timeToMin(t){
   if(!t)return 0;
@@ -927,7 +938,7 @@ function renderEmStats(){
   mo.slice(0,10).forEach(function(e){
     html+='<div class="list-row">'
       +'<div class="col">'+dispDate(e.date)+'</div>'
-      +'<div class="col">'+e.orName+' '+e.session+'</div>'
+      +'<div class="col">'+e.orName+' '+fmtSession(e.session)+'</div>'
       +'<div class="col" style="color:var(--orange);font-weight:500">'+e.emergencyDoctor+'</div>'
       +'<div class="col-lg" style="color:var(--orange)">🚨 '+e.emergencyOpname+'</div>'
       +'<div class="col" style="color:var(--red)">'+e.blockedDoctor+'</div>'
@@ -1093,7 +1104,7 @@ function renderList(){
       html+='<div class="list-row">'
         +'<div class="col-xl"><div style="font-weight:600">'+(s.emergency?'🚨 ':'')+s.opname+'</div></div>'
         +'<div class="col">'+(dr?dr.name:'?')+'</div>'
-        +'<div class="col">'+dispDate(s.date)+'<br><span style="font-size:12px">'+s.session+'</span></div>'
+        +'<div class="col">'+dispDate(s.date)+'<br><span style="font-size:12px">'+fmtSession(s.session)+'</span></div>'
         +'<div class="col">'+(s.patname?'<div style="font-size:13px">'+s.patname+'</div>':'—')+'</div>'
         +'<div class="col">'+(s.chartno?'<div style="font-size:13px">#'+s.chartno+'</div>':'—')+'</div>'
         +'<div class="col">'+(or?or.name:'?')+'</div>'
