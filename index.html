@@ -394,16 +394,11 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
           </div>
           <div class="form-grid">
             <div class="form-group"><label>時段 *</label>
-              <select id="f-sess" onchange="checkSlot()">
-                <option value="08:00">08:00</option><option value="10:00">10:00</option>
-                <option value="13:00">13:00</option><option value="15:00">15:00</option>
-              </select>
+              <input type="time" id="f-sess" value="08:00" onchange="checkSlot()" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">
+
             </div>
             <div class="form-group"><label>預估時間 *</label>
-              <select id="f-dur">
-                <option value="1">1 小時</option><option value="2" selected>2 小時</option>
-                <option value="3">3 小時</option><option value="4">4 小時以上</option>
-              </select>
+              <input type="number" id="f-dur" value="2" min="0.5" max="24" step="0.5" placeholder="例：2.5" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);outline:none;">
             </div>
           </div>
           <div class="form-grid">
@@ -558,6 +553,40 @@ var CU=null; // 目前使用者
 var DATA={schedules:[],users:[],ors:[],emergencyLogs:[],logs:[]};
 var pendingDel=null, pendingEM=null;
 var SESSIONS=['08:00','10:00','13:00','15:00'];
+
+// 把時間字串轉成分鐘數（08:30 → 510）
+function timeToMin(t){
+  if(!t)return 0;
+  var parts=String(t).split(':');
+  return parseInt(parts[0]||0)*60+parseInt(parts[1]||0);
+}
+// 把分鐘數轉成時間字串（510 → 08:30）
+function minToTime(m){
+  var h=Math.floor(m/60);var min=m%60;
+  return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0');
+}
+// 計算某刀房某天的最早可用開始時間
+function earliestAvailable(orId, date){
+  var daySchedules=DATA.schedules.filter(function(s){
+    return Number(s.or)===Number(orId)&&fmtDate(s.date)===date&&!s.emergency;
+  });
+  if(!daySchedules.length)return timeToMin('07:00');
+  var latestEnd=Math.max.apply(null,daySchedules.map(function(s){
+    return timeToMin(s.session)+Math.round(parseFloat(s.duration||1)*60);
+  }));
+  return latestEnd;
+}
+// 檢查時間是否與現有排程衝突（回傳衝突的排程陣列）
+function findConflicts(orId, date, startMin, durHr, excludeId){
+  var endMin=startMin+Math.round(parseFloat(durHr||1)*60);
+  return DATA.schedules.filter(function(s){
+    if(excludeId&&s.id===excludeId)return false;
+    if(Number(s.or)!==Number(orId)||fmtDate(s.date)!==date)return false;
+    var sStart=timeToMin(s.session);
+    var sEnd=sStart+Math.round(parseFloat(s.duration||1)*60);
+    return startMin<sEnd&&endMin>sStart;
+  });
+}
 var DAYS=[{d:1,n:'週一'},{d:2,n:'週二'},{d:3,n:'週三'},{d:4,n:'週四'},{d:5,n:'週五'},{d:6,n:'週六'},{d:0,n:'週日'}];
 
 // ══ 工具 ══
@@ -779,69 +808,99 @@ function renderDashboard(){
   var container=document.getElementById('or-container');container.innerHTML='';
   if(!DATA.ors.length){container.innerHTML='<div class="card" style="text-align:center;color:var(--text-3);padding:32px">尚無刀房資料</div>';return;}
 
+  // 時間軸設定
+  var TL_START=7*60;  // 07:00
+  var TL_END=22*60;   // 22:00
+  var TL_TOTAL=TL_END-TL_START; // 900 分鐘
+  var CUTOFF=18*60;   // 18:00 截止線
+
   DATA.ors.forEach(function(or){
     var card=document.createElement('div');
     card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;';
 
-    // ── 刀房標題 ──
+    // 刀房標題
     var headBg=or.open?'var(--green-bg)':'var(--gray-bg)';
     var headColor=or.open?'var(--green)':'var(--text-3)';
-    card.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:'+headBg+';border-bottom:1px solid var(--border-light)">'
+    var orSchedules=ts.filter(function(s){return Number(s.or)===or.id;}).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
+    var totalHr=orSchedules.reduce(function(acc,s){return acc+parseFloat(s.duration||0);},0);
+
+    card.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:'+headBg+';border-bottom:1px solid var(--border-light)">'
       +'<span style="width:8px;height:8px;border-radius:50%;background:'+(or.open?'var(--green)':'var(--text-3)')+';flex-shrink:0;display:inline-block"></span>'
-      +'<span style="font-size:15px;font-weight:700;color:'+headColor+'">'+or.name+'</span>'
-      +(or.open
-        ?'<span style="margin-left:auto;font-size:12px;color:var(--green);font-weight:500;background:var(--surface);padding:2px 10px;border-radius:20px">開放中</span>'
-        :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
+      +'<span style="font-size:14px;font-weight:700;color:'+headColor+'">'+or.name+'</span>'
+      +(or.open&&orSchedules.length?'<span style="font-size:12px;color:var(--text-2);margin-left:4px">· '+orSchedules.length+' 台，共 '+totalHr+' 小時</span>':'')
+      +(or.open?'<span style="margin-left:auto;font-size:11px;color:var(--green);font-weight:500;background:var(--surface);padding:2px 8px;border-radius:20px">開放中</span>'
+               :'<span style="margin-left:auto;font-size:12px;color:var(--text-3)">🔒 停用中'+(or.reason?' — '+or.reason:'')+'</span>')
       +'</div>';
 
     if(!or.open){container.appendChild(card);return;}
 
-    // ── 時段橫排 ──
-    var body=document.createElement('div');
-    body.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);';
+    // 時間軸區域
+    var tlWrap=document.createElement('div');
+    tlWrap.style.cssText='padding:12px 16px 14px;';
 
-    SESSIONS.forEach(function(sess,si){
-      var m=ts.filter(function(s){return Number(s.or)===or.id&&s.session===sess;});
-      var col=document.createElement('div');
-      col.style.cssText='border-right:'+(si<3?'1px solid var(--border-light)':'none')+';';
-
-      // 時段標籤
-      var timeLabel='<div style="font-size:11px;font-weight:600;color:var(--text-2);padding:7px 12px;background:var(--bg);border-bottom:1px solid var(--border-light);letter-spacing:.02em">'+sess+'</div>';
-
-      if(!m.length){
-        // 空
-        col.innerHTML=timeLabel
-          +'<div style="display:flex;align-items:center;justify-content:center;min-height:58px;font-size:13px;color:var(--text-3)">—</div>';
-
-      }else if(m.length>1){
-        // 衝突：列出所有手術
-        var conflictHtml='<div style="padding:8px 10px;min-height:58px;">'
-          +'<div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:4px">⚠ 衝突 '+m.length+' 筆</div>';
-        m.forEach(function(s,idx){
-          var dr=getUser(s.doctor);
-          conflictHtml+='<div style="padding:5px 8px;background:var(--red-bg);border-left:2px solid var(--red);border-radius:0 4px 4px 0;margin-bottom:'+(idx<m.length-1?'5px':'0')+'">'
-            +'<div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-            +'<div style="font-size:11px;color:var(--text-2)">'+(dr?dr.name:'?')+'</div>'
-            +'</div>';
-        });
-        conflictHtml+='</div>';
-        col.innerHTML=timeLabel+conflictHtml;
-
-      }else{
-        // 一筆手術
-        var s=m[0];var dr=getUser(s.doctor);
-        var indColor=s.emergency?'var(--orange)':'var(--green)';
-        col.innerHTML=timeLabel
-          +'<div style="padding:8px 10px 10px;min-height:58px;border-left:2px solid '+indColor+'">'
-          +'<div style="font-size:12px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+';margin-bottom:3px;line-height:1.4">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-          +'<div style="font-size:11px;color:var(--text-2)">'+(dr?dr.name:'?')+'</div>'
-          +(s.patname?'<div style="font-size:11px;color:var(--text-3)">👤 '+s.patname+(s.chartno?' · #'+s.chartno:'')+'</div>':'')
-          +(s.chartno&&!s.patname?'<div style="font-size:11px;color:var(--text-3)">#'+s.chartno+'</div>':'')
-          +'</div>';
+    // 時間刻度標籤
+    var labels='<div style="position:relative;height:18px;margin-bottom:4px;">';
+    for(var h=7;h<=22;h+=1){
+      var pct=((h*60-TL_START)/TL_TOTAL*100).toFixed(2);
+      if(h%2===0||h===7||h===22){
+        labels+='<span style="position:absolute;left:'+pct+'%;font-size:10px;color:var(--text-3);transform:translateX(-50%)">'
+          +String(h).padStart(2,'0')+':00</span>';
       }
-      body.appendChild(col);
+    }
+    labels+='</div>';
+
+    // 時間軸主體
+    var tlBar='<div style="position:relative;height:36px;background:var(--bg);border-radius:6px;overflow:visible;">';
+
+    // 18:00 截止線
+    var cutoffPct=((CUTOFF-TL_START)/TL_TOTAL*100).toFixed(2);
+    tlBar+='<div style="position:absolute;left:'+cutoffPct+'%;top:-4px;bottom:-4px;width:1.5px;background:var(--amber);z-index:3;">'
+      +'<span style="position:absolute;top:-16px;left:4px;font-size:10px;color:var(--amber);font-weight:600;white-space:nowrap">截止 18:00</span>'
+      +'</div>';
+
+    // 每台手術色塊
+    orSchedules.forEach(function(s){
+      var startM=timeToMin(s.session);
+      var endM=startM+Math.round(parseFloat(s.duration||1)*60);
+      var left=((startM-TL_START)/TL_TOTAL*100).toFixed(2);
+      var width=((endM-startM)/TL_TOTAL*100).toFixed(2);
+      var bg=s.emergency?'var(--orange)':'var(--green)';
+      var dr=getUser(s.doctor);
+      var label=s.opname.length>20?s.opname.substring(0,18)+'…':s.opname;
+      tlBar+='<div title="'+s.opname+'\n'+(dr?dr.name:'?')+'\n'+s.session+'–'+minToTime(endM)+' ('+s.duration+'hr)" '
+        +'style="position:absolute;left:'+left+'%;width:'+width+'%;height:100%;background:'+bg+';border-radius:4px;z-index:2;cursor:default;box-sizing:border-box;border:1px solid rgba(0,0,0,.1);">'
+        +'<div style="padding:2px 6px;overflow:hidden;height:100%;display:flex;flex-direction:column;justify-content:center;">'
+        +'<div style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.emergency?'🚨 ':'')+label+'</div>'
+        +(parseFloat(width)>15?'<div style="font-size:10px;color:rgba(255,255,255,.85);white-space:nowrap">'+(dr?dr.name:'?')+'</div>':'')
+        +'</div></div>';
     });
-    card.appendChild(body);
+    tlBar+='</div>';
+
+    // 手術列表
+    var listHtml='';
+    if(orSchedules.length){
+      listHtml='<div style="margin-top:12px;border-top:1px solid var(--border-light);padding-top:10px;display:flex;flex-direction:column;gap:6px;">';
+      orSchedules.forEach(function(s){
+        var dr=getUser(s.doctor);
+        var startM=timeToMin(s.session);
+        var endM=startM+Math.round(parseFloat(s.duration||1)*60);
+        var indColor=s.emergency?'var(--orange)':'var(--green)';
+        listHtml+='<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 10px;background:var(--bg);border-radius:var(--radius);border-left:3px solid '+indColor+'">'
+          +'<div style="font-size:12px;font-weight:600;color:var(--text-2);min-width:90px;white-space:nowrap">'+s.session+' → '+minToTime(endM)+'</div>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:13px;font-weight:600;color:'+(s.emergency?'var(--orange)':'var(--text)')+'">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
+          +'<div style="font-size:12px;color:var(--text-2)">'+(dr?dr.name:'?')+(s.patname?' · 👤 '+s.patname:'')+(s.chartno?' · #'+s.chartno:'')+'</div>'
+          +'</div>'
+          +'<div style="font-size:12px;color:var(--text-3);white-space:nowrap">'+s.duration+' hr</div>'
+          +'</div>';
+      });
+      listHtml+='</div>';
+    }else{
+      listHtml='<div style="margin-top:10px;font-size:13px;color:var(--text-3);text-align:center;padding:6px 0">今日無排程</div>';
+    }
+
+    tlWrap.innerHTML=labels+tlBar+listHtml;
+    card.appendChild(tlWrap);
     container.appendChild(card);
   });
 
@@ -909,20 +968,41 @@ function checkSlot(){
   var date=document.getElementById('f-date').value;
   var orId=parseInt(document.getElementById('f-or').value);
   var sess=document.getElementById('f-sess').value;
+  var dur=parseFloat(document.getElementById('f-dur').value||2);
   var em=document.getElementById('f-em').checked;
   var banner=document.getElementById('add-banner');banner.innerHTML='';
-  if(!date||!orId)return;
+  if(!date||!orId||!sess)return;
   var or=getOR(orId);
   if(or&&!or.open){banner.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中</div>';return;}
-  var c=DATA.schedules.find(function(s){return fmtDate(s.date)===date&&Number(s.or)===orId&&s.session===sess;});
-  if(c){
-    var dr=getUser(c.doctor);
-    if(em)banner.innerHTML='<div class="banner banner-orange">🚨 急診模式：此時段有排程（'+(dr?dr.name:'?')+' — '+c.opname+'），插刀後將記錄被擋資訊。</div>';
-    else banner.innerHTML='<div class="banner banner-warn">⚠️ 此時段已有排程：'+c.opname+'（'+(dr?dr.name:'?')+'）</div>';
+  var startMin=timeToMin(sess);
+  // 超過 18:00 警告
+  if(startMin>timeToMin('18:00')){
+    banner.innerHTML='<div class="banner banner-warn">⛔ 開始時間不能晚於 18:00</div>';return;
+  }
+  // 顯示預計結束時間
+  var endMin=startMin+Math.round(dur*60);
+  var endStr=minToTime(endMin);
+  var endNote='<div style="font-size:12px;color:var(--text-2);margin-bottom:10px">預計結束時間：<b>'+endStr+'</b>'+(endMin>timeToMin('18:00')?' <span style="color:var(--amber)">（超過 18:00，手術將持續到隔天）</span>':'')+'</div>';
+  // 衝突檢查
+  var conflicts=findConflicts(orId,date,startMin,dur);
+  if(conflicts.length&&!em){
+    var cdr=getUser(conflicts[0].doctor);
+    banner.innerHTML=endNote+'<div class="banner banner-warn">⚠️ 此時段與現有排程衝突：'+conflicts[0].opname+'（'+(cdr?cdr.name:'?')+'，'+conflicts[0].session+'，'+conflicts[0].duration+'小時）</div>';
+  }else if(conflicts.length&&em){
+    var cdr2=getUser(conflicts[0].doctor);
+    banner.innerHTML=endNote+'<div class="banner banner-orange">🚨 急診模式：與「'+conflicts[0].opname+'」（'+(cdr2?cdr2.name:'?')+'）衝突，插刀後將記錄被擋資訊。</div>';
+  }else{
+    banner.innerHTML=endNote;
   }
 }
 function clearForm(){
-  ['f-date','f-pat','f-chart','f-op','f-note'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-date').value='';
+  document.getElementById('f-sess').value='08:00';
+  document.getElementById('f-dur').value='2';
+  document.getElementById('f-pat').value='';
+  document.getElementById('f-chart').value='';
+  document.getElementById('f-op').value='';
+  document.getElementById('f-note').value='';
   document.getElementById('f-em').checked=false;
   document.getElementById('add-banner').innerHTML='';
   onEmToggle();
@@ -931,22 +1011,28 @@ function submitSchedule(){
   var date=document.getElementById('f-date').value;
   var orId=parseInt(document.getElementById('f-or').value);
   var sess=document.getElementById('f-sess').value;
-  var dur=document.getElementById('f-dur').value;
+  var dur=parseFloat(document.getElementById('f-dur').value);
   var dr=document.getElementById('f-dr').value;
   var op=document.getElementById('f-op').value.trim();
   var pat=document.getElementById('f-pat').value.trim();
   var chart=document.getElementById('f-chart').value.trim();
   var note=document.getElementById('f-note').value.trim();
   var em=document.getElementById('f-em').checked;
-  if(!date||!orId||!op){showToast('請填寫日期、刀房、術式名稱');return;}
+  if(!date||!orId||!sess||!op){showToast('請填寫日期、刀房、開始時間、術式名稱');return;}
+  if(!dur||dur<=0){showToast('請填寫有效的手術時長');return;}
   var or=getOR(orId);
   if(or&&!or.open){showToast('此刀房目前停用中');return;}
-  var conflict=DATA.schedules.find(function(s){return fmtDate(s.date)===date&&Number(s.or)===orId&&s.session===sess;});
-  if(conflict&&!em){showToast('此時段已有排程，請開啟急診模式');return;}
-  if(conflict&&em){
-    var cdr=getUser(conflict.doctor);
-    document.getElementById('em-conflict-info').innerHTML='<b>被擋醫師：</b>'+(cdr?cdr.name:'?')+' — '+conflict.opname;
-    pendingEM={date:date,orId:orId,or:or,sess:sess,dur:dur,dr:dr,op:op,pat:pat,chart:chart,note:note,conflict:conflict,cdr:cdr};
+  var startMin=timeToMin(sess);
+  if(startMin>timeToMin('18:00')){showToast('開始時間不能晚於 18:00');return;}
+  var conflicts=findConflicts(orId,date,startMin,dur);
+  if(conflicts.length&&!em){showToast('此時段與現有排程衝突，請開啟急診模式或調整時間');return;}
+  if(conflicts.length&&em){
+    var cdr=getUser(conflicts[0].doctor);
+    document.getElementById('em-conflict-info').innerHTML=
+      '<b>被擋手術：</b>'+conflicts[0].opname+'<br>'
+      +'<b>被擋醫師：</b>'+(cdr?cdr.name:'?')+'<br>'
+      +'<b>時段：</b>'+conflicts[0].session+'，'+conflicts[0].duration+' 小時';
+    pendingEM={date:date,orId:orId,or:or,sess:sess,dur:dur,dr:dr,op:op,pat:pat,chart:chart,note:note,conflict:conflicts[0],cdr:cdr};
     openModal('em-modal');return;
   }
   doSubmit({date:date,orId:orId,or:or,sess:sess,dur:dur,dr:dr,op:op,pat:pat,chart:chart,note:note,em:false});
