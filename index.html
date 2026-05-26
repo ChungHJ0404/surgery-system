@@ -1026,7 +1026,7 @@ function checkSlot(){
     var earliest=earliestAvailable(orId,date);
     var earliestStr=minToTime(earliest);
     var isAfterCutoff=earliest>timeToMin('18:00');
-    summaryHtml+='<div style="margin-top:8px;font-size:13px;font-weight:600;color:'+(isAfterCutoff?'var(--red)':'var(--green)')+'">最早可排：'+earliestStr+(isAfterCutoff?' ⚠ 已超過 18:00，今日無法再排')+'</div>';
+    summaryHtml+='<div style="margin-top:8px;font-size:13px;font-weight:600;color:'+(isAfterCutoff?'var(--red)':'var(--green)')+'">最早可排：'+earliestStr+(isAfterCutoff?' ⚠ 已超過 18:00，今日無法再排':'')+'</div>';
     summaryHtml+='</div>';
   }
 
