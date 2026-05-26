@@ -1438,31 +1438,39 @@ function saveTargets(){
   localStorage.setItem('tgt-year',document.getElementById('tgt-year').value||'800');
   renderStats();showToast('✓ 目標已儲存');
 }
+function sc(l,c,v,b){return '<div class="stat-card"><div class="stat-label">'+l+'</div><div class="stat-value" style="color:var('+c+')">'+v+'</div><div class="stat-sub">'+b+'</div></div>';}
+
 function renderStats(){
   var now=new Date();
   var tm=parseInt(localStorage.getItem('tgt-month')||'80');
   var ty=parseInt(localStorage.getItem('tgt-year')||'800');
-  document.getElementById('tgt-month').value=tm;
-  document.getElementById('tgt-year').value=ty;
+  var tmEl=document.getElementById('tgt-month');
+  var tyEl=document.getElementById('tgt-year');
+  if(tmEl)tmEl.value=tm;
+  if(tyEl)tyEl.value=ty;
   var mo=DATA.schedules.filter(function(s){var d=new Date(fmtDate(s.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var yr=DATA.schedules.filter(function(s){return new Date(fmtDate(s.date)).getFullYear()===now.getFullYear();});
   var moEm=mo.filter(function(s){return s.emergency;});
-  document.getElementById('stat-grid-2').innerHTML=
+  var sg2=document.getElementById('stat-grid-2');
+  if(sg2)sg2.innerHTML=
     sc('本月手術總數','--text',mo.length,'目標 '+tm+' 台')+
     sc('本年累計','--blue',yr.length,'目標 '+ty+' 台')+
     sc('本月急診插刀','--orange',moEm.length,'台')+
     sc('醫師人數','--purple',DATA.users.filter(function(u){return!isAdmin(u);}).length,'位醫師');
   var drs=DATA.users.filter(function(u){return!isAdmin(u);});
   var mx=Math.max.apply(null,drs.map(function(d){return mo.filter(function(s){return s.doctor===d.code;}).length;}).concat([0]));
-  document.getElementById('dr-bars').innerHTML=drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return bar(dr.name+' ('+dr.code+')',c,mx,'');}).join('');
+  var drEl=document.getElementById('dr-bars');
+  if(drEl)drEl.innerHTML=drs.length?drs.map(function(dr){var c=mo.filter(function(s){return s.doctor===dr.code;}).length;return bar(dr.name+' ('+dr.code+')',c,mx,'');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無醫師資料</div>';
   var openOrs=DATA.ors.filter(function(o){return o.open;});
   var mx2=Math.max.apply(null,openOrs.map(function(o){return mo.filter(function(s){return String(s.or)===String(o.id);}).length;}).concat([0]));
-  document.getElementById('or-bars').innerHTML=openOrs.map(function(or){var c=mo.filter(function(s){return String(s.or)===String(or.id);}).length;return bar(or.name,c,mx2,'');}).join('');
+  var orEl=document.getElementById('or-bars');
+  if(orEl)orEl.innerHTML=openOrs.length?openOrs.map(function(or){var c=mo.filter(function(s){return String(s.or)===String(or.id);}).length;return bar(or.name,c,mx2,'');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">尚無刀房資料</div>';
   var moEmLogs=DATA.emergencyLogs.filter(function(e){var d=new Date(fmtDate(e.date));return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   var bc={};moEmLogs.forEach(function(e){bc[e.blockedDoctor]=(bc[e.blockedDoctor]||0)+1;});
   var ba=Object.keys(bc).map(function(k){return{name:k,count:bc[k]};}).sort(function(a,b){return b.count-a.count;});
   var mx3=ba.length?ba[0].count:0;
-  document.getElementById('blocked-bars').innerHTML=ba.length?ba.map(function(b){return bar(b.name,b.count,mx3,' style="background:var(--orange)"');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
+  var blEl=document.getElementById('blocked-bars');
+  if(blEl)blEl.innerHTML=ba.length?ba.map(function(b){return bar(b.name,b.count,mx3,' style="background:var(--orange)"');}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:8px 0">本月無被擋刀記錄</div>';
 }
 function bar(name,count,max,style){var pct=max?Math.round(count/max*100):0;return '<div class="bar-wrap" style="margin-bottom:14px"><div class="bar-top"><span style="font-weight:500">'+name+'</span><span style="color:var(--text-3)">'+count+' 台</span></div><div class="bar-track"><div class="bar-fill'+style+'" style="width:'+pct+'%"></div></div></div>';}
 
