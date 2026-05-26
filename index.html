@@ -662,10 +662,7 @@ function dispDate(v){var s=fmtDate(v);return s?s.replace(/^\d{4}-/,'').replace('
 function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
 function isAdmin(u){return u&&(u.role==='admin'||u.role==='管理員'||u.role==='管理者');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
-function loading(show){
-  // 不用全畫面遮罩，改用 toast 提示
-  if(show){showToast('⏳ 正在同步資料…');}
-}
+function loading(show){}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 function getOR(id){return DATA.ors.find(function(o){return String(o.id)===String(id);});}
@@ -686,11 +683,7 @@ function apiSend(params){
 }
 
 // ══ 載入所有資料 ══
-function loadAll(cb){
-  loading(true);
-  apiGet({action:'getAll'},function(data){
-    loading(false);
-    if(!data||data.status!=='ok'){showToast('⚠️ 無法連線 Sheets');if(cb)cb();return;}
+function loadAll(cb){ apiGet({action:'getAll'},function(data){ if(!data||data.status!=='ok'){showToast('⚠️ 無法連線 Sheets');if(cb)cb();return;}
     if(data.schedules)data.schedules.forEach(function(s){s.date=fmtDate(s.date);});
     
     // 合併保留預設 admin
@@ -746,12 +739,9 @@ function doLogin(){
     return;
   }
 
-  // 本地找不到，從 Sheets 重新載入再試
-  loading(true);
-  var _timer=setTimeout(function(){loading(false);err.textContent='連線逾時，請重試';err.style.display='block';},8000);
+  // 本地找不到，從 Sheets 重新載入再試 var _timer=setTimeout(function(){ err.textContent='連線逾時，請重試';err.style.display='block';},8000);
   apiGet({action:'getAll'},function(data){
-    clearTimeout(_timer);loading(false);
-    if(data){
+    clearTimeout(_timer); if(data){
       if(data.users&&data.users.length){
         var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
         if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
@@ -849,11 +839,7 @@ function initApp(){
   goPage('dashboard',document.querySelector('.nav-item'));
 
   // 登入後從 Sheets 載入最新資料
-  if(SHEETS_URL){
-    loading(true);
-    var _t=setTimeout(function(){
-      loading(false);
-      showToast('⚠️ 連線逾時，使用本地資料');
+  if(SHEETS_URL){ var _t=setTimeout(function(){ showToast('⚠️ 連線逾時，使用本地資料');
       populateDrSelect();populateORSelect();
       setTimeout(function(){
         renderDashboard();renderList();renderStats();
@@ -861,9 +847,7 @@ function initApp(){
       },100);
     },10000);
     apiGet({action:'getAll'},function(data){
-      clearTimeout(_t);
-      loading(false);
-      // 不管 status，只要有資料就載入
+      clearTimeout(_t); // 不管 status，只要有資料就載入
       if(data){
         if(data.users&&data.users.length){
           var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
@@ -907,11 +891,7 @@ function shiftDate(d){
   renderDashboard();
 }
 
-function loadAndRenderDashboard(){
-  loading(true);
-  apiGet({action:'getAll'},function(data){
-    loading(false);
-    if(data){
+function loadAndRenderDashboard(){ apiGet({action:'getAll'},function(data){ if(data){
       if(data.schedules){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
       if(data.ors&&data.ors.length){DATA.ors=data.ors;}
       if(data.users&&data.users.length)DATA.users=data.users;
