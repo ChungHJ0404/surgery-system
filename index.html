@@ -579,6 +579,8 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
   </div>
 </div>
 
+<div id="dbg-panel" style="position:fixed;bottom:0;left:0;right:0;background:#1a1d23;color:#0f0;font-size:11px;font-family:monospace;padding:8px;max-height:160px;overflow-y:auto;z-index:9999;display:block;"></div>
+
 <div id="toast"></div>
 
 <script>
@@ -822,24 +824,31 @@ function initApp(){
   if(SHEETS_URL){document.getElementById('sheets-url-input').value=SHEETS_URL;document.getElementById('url-connected').style.display='block';}
   goPage('dashboard',document.querySelector('.nav-item'));
 
-  // 登入後從 Sheets 載入最新資料，載入完才 render
-  if(SHEETS_URL){ var _t=setTimeout(function(){ showToast('⚠️ 連線逾時，使用本地資料');
+  if(SHEETS_URL){
+    dbg('initApp: 開始載入 Sheets 資料');
+    var _t=setTimeout(function(){
+      dbg('initApp: 連線逾時！');
+      showToast('⚠️ 連線逾時，使用本地資料');
       populateDrSelect();populateORSelect();
-      setTimeout(function(){
-        renderDashboard();renderList();renderStats();
-        if(isAdmin(CU))renderAdmin();
-      },100);
+      renderDashboard();renderList();renderStats();
+      if(isAdmin(CU))renderAdmin();
     },10000);
     apiGet({action:'getAll'},function(data){
-      clearTimeout(_t); // 不管 status，只要有資料就載入
+      clearTimeout(_t);
+      dbg('API回應: status='+(data&&data.status)+' ors='+(data&&data.ors&&data.ors.length));
       if(data){
         if(data.users&&data.users.length){
           var ae=data.users.find(function(u){return u.code.toLowerCase()==='admin';});
           if(!ae)data.users.push({code:'admin',name:'管理員',pw:hashPw('admin123'),role:'admin',createdAt:today()});
           DATA.users=data.users;
         }
-        if(data.schedules&&data.schedules.length>=0){data.schedules.forEach(function(s){s.date=fmtDate(s.date);});DATA.schedules=data.schedules;}
-        if(data.ors&&data.ors.length){DATA.ors=data.ors;}
+        if(data.schedules&&data.schedules.length>=0){
+          data.schedules.forEach(function(s){s.date=fmtDate(s.date);});
+          DATA.schedules=data.schedules;
+        }
+        if(data.ors&&data.ors.length){
+          DATA.ors=data.ors;
+        }
         if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
         if(data.logs)DATA.logs=data.logs;
         var dates2=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
@@ -850,14 +859,14 @@ function initApp(){
           if(f2.length)best2=f2[0];else if(p2.length)best2=p2[0];
         }
         document.getElementById('dash-date').value=best2;
-        if(data.status==='ok')showToast('✓ 資料已同步');
+        showToast('✓ 資料已同步');
       }
+      dbg('render前: ors='+DATA.ors.length+' sched='+DATA.schedules.length);
       populateDrSelect();populateORSelect();
-      // 強制等 DOM 更新後再 render
-      setTimeout(function(){
-        renderDashboard();renderList();renderStats();
-        if(isAdmin(CU))renderAdmin();
-      },100);
+      renderDashboard();
+      dbg('renderDashboard完成');
+      renderList();renderStats();
+      if(isAdmin(CU))renderAdmin();
     });
   }else{
     populateDrSelect();populateORSelect();
@@ -893,6 +902,16 @@ function canSeePatient(s){
 }
 function patName(s){return canSeePatient(s)?(s.patname||''):'***';}
 function patChart(s){return canSeePatient(s)?(s.chartno||''):'***';}
+
+function isMobile(){return window.innerWidth<=768;}
+
+// 可見除錯 log
+var _dbgLogs=[];
+function dbg(msg){
+  _dbgLogs.push(new Date().toISOString().substr(11,8)+' '+msg);
+  var el=document.getElementById('dbg-panel');
+  if(el)el.innerHTML=_dbgLogs.slice(-20).map(function(l){return '<div>'+l+'</div>';}).join('');
+}
 
 function showDiag(){
   var msg='=== 診斷資訊 ===\n';
