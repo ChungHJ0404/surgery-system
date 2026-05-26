@@ -852,8 +852,10 @@ function initApp(){
       loading(false);
       showToast('⚠️ 連線逾時，使用本地資料');
       populateDrSelect();populateORSelect();
-      renderDashboard();renderList();renderStats();
-      if(isAdmin(CU))renderAdmin();
+      setTimeout(function(){
+        renderDashboard();renderList();renderStats();
+        if(isAdmin(CU))renderAdmin();
+      },100);
     },10000);
     apiGet({action:'getAll'},function(data){
       clearTimeout(_t);
@@ -880,8 +882,11 @@ function initApp(){
         if(data.status==='ok')showToast('✓ 資料已同步');
       }
       populateDrSelect();populateORSelect();
-      renderDashboard();renderList();renderStats();
-      if(isAdmin(CU))renderAdmin();
+      // 強制等 DOM 更新後再 render
+      setTimeout(function(){
+        renderDashboard();renderList();renderStats();
+        if(isAdmin(CU))renderAdmin();
+      },100);
     });
   }else{
     populateDrSelect();populateORSelect();
