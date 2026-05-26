@@ -1036,6 +1036,30 @@ function checkSlot(){
   var or=getOR(orId);
   if(or&&!or.open){banner.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中</div>';return;}
 
+  // 檢查每週固定時段
+  if(or&&or.sched){
+    var dow=new Date(date).getDay(); // 0=週日,1=週一...
+    var sched=or.sched[dow]||[0,0];
+    var startMin=sess?timeToMin(sess):0;
+    var isAM=startMin<timeToMin('12:00');
+    var isPM=startMin>=timeToMin('12:00');
+    if((!isAM||!sched[0])&&(!isPM||!sched[1])){
+      // 判斷是上午還是下午沒開放
+      var dayNames=['週日','週一','週二','週三','週四','週五','週六'];
+      var closedSession=(!sched[0]&&!sched[1])?'上午及下午':(!sched[0]?'上午':'下午');
+      if(!sched[0]&&!sched[1]){
+        banner.innerHTML='<div class="banner banner-warn">⛔ '+or.name+' 在'+dayNames[dow]+'整天不開放（非本科時段）</div>';
+        return;
+      }
+      if(sess&&isAM&&!sched[0]){
+        banner.innerHTML='<div class="banner banner-warn">⚠️ '+or.name+' 在'+dayNames[dow]+'上午非本科時段，建議選下午時段</div>';
+      }
+      if(sess&&isPM&&!sched[1]){
+        banner.innerHTML='<div class="banner banner-warn">⚠️ '+or.name+' 在'+dayNames[dow]+'下午非本科時段，建議選上午時段</div>';
+      }
+    }
+  }
+
   // 今日該刀房已排的手術
   var dayScheds=DATA.schedules.filter(function(s){
     return Number(s.or)===Number(orId)&&fmtDate(s.date)===date;
@@ -1113,6 +1137,16 @@ function submitSchedule(){
   if(!dur||dur<=0){showToast('請填寫有效的手術時長');return;}
   var or=getOR(orId);
   if(or&&!or.open){showToast('此刀房目前停用中');return;}
+  // 檢查每週固定時段
+  if(or&&or.sched){
+    var dow=new Date(date).getDay();
+    var sched=or.sched[dow]||[0,0];
+    var startMin2=timeToMin(sess);
+    var isAM2=startMin2<timeToMin('12:00');
+    if(!sched[0]&&!sched[1]){showToast('此刀房在該日整天非本科時段，無法排程');return;}
+    if(isAM2&&!sched[0]&&!em){showToast('此刀房在該日上午非本科時段，請選下午或開啟急診模式');return;}
+    if(!isAM2&&!sched[1]&&!em){showToast('此刀房在該日下午非本科時段，請選上午或開啟急診模式');return;}
+  }
   var startMin=timeToMin(sess);
   if(startMin>timeToMin('18:00')){showToast('開始時間不能晚於 18:00');return;}
   var conflicts=findConflicts(orId,date,startMin,dur);
