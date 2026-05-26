@@ -563,7 +563,21 @@ var DAYS=[{d:1,n:'週一'},{d:2,n:'週二'},{d:3,n:'週三'},{d:4,n:'週四'},{d
 // ══ 工具 ══
 function pad(n){return String(n).padStart(2,'0');}
 function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-function fmtDate(v){if(!v)return '';if(v instanceof Date)return v.getFullYear()+'-'+pad(v.getMonth()+1)+'-'+pad(v.getDate());var s=String(v);if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.substring(0,10);try{var d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}catch(e){}return s;}
+function fmtDate(v){
+  if(!v)return '';
+  if(v instanceof Date){return v.getFullYear()+'-'+pad(v.getMonth()+1)+'-'+pad(v.getDate());}
+  var s=String(v).trim();
+  // 已經是 yyyy-MM-dd 格式
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  // 嘗試解析各種格式
+  try{
+    var d=new Date(s);
+    if(!isNaN(d.getTime())&&d.getFullYear()>1900){
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    }
+  }catch(e){}
+  return s.substring(0,10);
+}
 function dispDate(v){var s=fmtDate(v);return s?s.replace(/^\d{4}-/,'').replace('-','/'):''}
 function hashPw(pw){var h=0,i,c;for(i=0;i<pw.length;i++){c=pw.charCodeAt(i);h=((h<<5)-h)+c;h|=0;}return 'h'+Math.abs(h).toString(36);}
 function isAdmin(u){return u&&(u.role==='admin'||u.role==='管理員'||u.role==='管理者');}
@@ -953,16 +967,16 @@ function renderList(){
   var html='';
   if(!f.length){html='<div style="padding:20px;text-align:center;color:var(--text-3)">此期間沒有排程</div>';}
   else{
-    html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:36px"></span></div>';
+    html='<div class="list-header"><span class="col-xl">術式</span><span class="col">醫師</span><span class="col">日期/時段</span><span class="col">病患姓名</span><span class="col">病歷號</span><span class="col">刀房</span><span class="col-sm">類型</span><span style="width:36px"></span></div>';
     f.forEach(function(s){
       var dr=getUser(s.doctor),or=getOR(s.or);
       var canDel=admin||(s.createdBy===CU.code);
       html+='<div class="list-row">'
-        +'<div class="col-xl"><div style="font-weight:600">'+(s.emergency?'🚨 ':'')+s.opname+'</div>'
-        +(s.patname||s.chartno?'<div style="font-size:12px;color:var(--text-3)">'+(s.patname?'👤 '+s.patname:'')+(s.chartno?' #'+s.chartno:'')+'</div>':'')
-        +'</div>'
+        +'<div class="col-xl"><div style="font-weight:600">'+(s.emergency?'🚨 ':'')+s.opname+'</div></div>'
         +'<div class="col">'+(dr?dr.name:'?')+'</div>'
         +'<div class="col">'+dispDate(s.date)+'<br><span style="font-size:12px">'+s.session+'</span></div>'
+        +'<div class="col">'+(s.patname?'<div style="font-size:13px">'+s.patname+'</div>':'—')+'</div>'
+        +'<div class="col">'+(s.chartno?'<div style="font-size:13px">#'+s.chartno+'</div>':'—')+'</div>'
         +'<div class="col">'+(or?or.name:'?')+'</div>'
         +'<div class="col-sm"><span class="badge '+(s.emergency?'badge-orange':'badge-green')+'">'+(s.emergency?'急診':'一般')+'</span></div>'
         +'<div style="width:36px;text-align:right">'+(canDel?'<button class="btn btn-danger btn-sm" style="padding:3px 8px" onclick="askDel(\''+s.id+'\',\''+s.opname.replace(/'/g,'')+'\')">✕</button>':'')+'</div>'
