@@ -982,28 +982,58 @@ function checkSlot(){
   var dur=parseFloat(document.getElementById('f-dur').value||2);
   var em=document.getElementById('f-em').checked;
   var banner=document.getElementById('add-banner');banner.innerHTML='';
-  if(!date||!orId||!sess)return;
+  if(!date||!orId)return;
   var or=getOR(orId);
   if(or&&!or.open){banner.innerHTML='<div class="banner banner-warn">⛔ 此刀房目前停用中</div>';return;}
-  var startMin=timeToMin(sess);
-  // 超過 18:00 警告
-  if(startMin>timeToMin('18:00')){
-    banner.innerHTML='<div class="banner banner-warn">⛔ 開始時間不能晚於 18:00</div>';return;
+
+  // 今日該刀房已排的手術
+  var dayScheds=DATA.schedules.filter(function(s){
+    return Number(s.or)===Number(orId)&&fmtDate(s.date)===date;
+  }).sort(function(a,b){return timeToMin(a.session)-timeToMin(b.session);});
+
+  var summaryHtml='';
+  if(dayScheds.length){
+    summaryHtml='<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;font-size:13px;">'
+      +'<div style="font-weight:600;color:var(--text-2);margin-bottom:6px">📋 '+or.name+' 今日排程：</div>';
+    dayScheds.forEach(function(s){
+      var dr=getUser(s.doctor);
+      var endM=timeToMin(s.session)+Math.round(parseFloat(s.duration||1)*60);
+      summaryHtml+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border-light);">'
+        +'<span style="font-size:12px;font-weight:600;color:var(--text-2);min-width:110px">'+s.session+' → '+minToTime(endM)+'</span>'
+        +'<span style="font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(s.emergency?'🚨 ':'')+s.opname+'</span>'
+        +'<span style="font-size:12px;color:var(--text-3)">'+s.duration+'hr</span>'
+        +'</div>';
+    });
+    // 最早可排時間
+    var earliest=earliestAvailable(orId,date);
+    var earliestStr=minToTime(earliest);
+    var isAfterCutoff=earliest>timeToMin('18:00');
+    summaryHtml+='<div style="margin-top:8px;font-size:13px;font-weight:600;color:'+(isAfterCutoff?'var(--red)':'var(--green)')+'">最早可排：'+earliestStr+(isAfterCutoff?' ⚠ 已超過 18:00，今日無法再排')+'</div>';
+    summaryHtml+='</div>';
   }
-  // 顯示預計結束時間
+
+  if(!sess){banner.innerHTML=summaryHtml;return;}
+
+  var startMin=timeToMin(sess);
+  if(startMin>timeToMin('18:00')){
+    banner.innerHTML=summaryHtml+'<div class="banner banner-warn">⛔ 開始時間不能晚於 18:00</div>';return;
+  }
   var endMin=startMin+Math.round(dur*60);
   var endStr=minToTime(endMin);
-  var endNote='<div style="font-size:12px;color:var(--text-2);margin-bottom:10px">預計結束時間：<b>'+endStr+'</b>'+(endMin>timeToMin('18:00')?' <span style="color:var(--amber)">（超過 18:00，手術將持續到隔天）</span>':'')+'</div>';
-  // 衝突檢查
+  var endNote='<div style="font-size:13px;color:var(--text-2);margin-bottom:10px">預計結束時間：<b style="color:var(--text)">'+endStr+'</b>'
+    +(endMin>timeToMin('18:00')?'&nbsp;<span style="color:var(--amber);font-size:12px">（超過 18:00，手術將持續到隔天）</span>':'')+'</div>';
+
   var conflicts=findConflicts(orId,date,startMin,dur);
   if(conflicts.length&&!em){
     var cdr=getUser(conflicts[0].doctor);
-    banner.innerHTML=endNote+'<div class="banner banner-warn">⚠️ 此時段與現有排程衝突：'+conflicts[0].opname+'（'+(cdr?cdr.name:'?')+'，'+conflicts[0].session+'，'+conflicts[0].duration+'小時）</div>';
+    var cEnd=timeToMin(conflicts[0].session)+Math.round(parseFloat(conflicts[0].duration||1)*60);
+    banner.innerHTML=summaryHtml+endNote+'<div class="banner banner-warn">⚠️ 與現有排程衝突：'+conflicts[0].opname+'（'+(cdr?cdr.name:'?')+'，'+fmtSession(conflicts[0].session)+'–'+minToTime(cEnd)+'）</div>';
   }else if(conflicts.length&&em){
     var cdr2=getUser(conflicts[0].doctor);
-    banner.innerHTML=endNote+'<div class="banner banner-orange">🚨 急診模式：與「'+conflicts[0].opname+'」（'+(cdr2?cdr2.name:'?')+'）衝突，插刀後將記錄被擋資訊。</div>';
+    var cEnd2=timeToMin(conflicts[0].session)+Math.round(parseFloat(conflicts[0].duration||1)*60);
+    banner.innerHTML=summaryHtml+endNote+'<div class="banner banner-orange">🚨 急診模式：與「'+conflicts[0].opname+'」（'+(cdr2?cdr2.name:'?')+'，'+fmtSession(conflicts[0].session)+'–'+minToTime(cEnd2)+'）衝突，插刀後將記錄被擋資訊。</div>';
   }else{
-    banner.innerHTML=endNote;
+    banner.innerHTML=summaryHtml+endNote;
   }
 }
 function clearForm(){
