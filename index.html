@@ -406,6 +406,7 @@ code{background:var(--bg);border:1px solid var(--border);border-radius:4px;paddi
             <button class="btn btn-secondary btn-sm" onclick="shiftDate(1)" style="flex-shrink:0">›</button>
           </div>
           <button class="btn btn-primary btn-sm" onclick="loadAndRenderDashboard()" style="flex-shrink:0">↻ 重新整理</button>
+          <button class="btn btn-secondary btn-sm" onclick="showDiag()" style="flex-shrink:0;font-size:11px">🔍 診斷</button>
         </div>
         <div id="or-container"></div>
         <div class="card">
@@ -921,7 +922,31 @@ function canSeePatient(s){
 function patName(s){return canSeePatient(s)?(s.patname||''):'***';}
 function patChart(s){return canSeePatient(s)?(s.chartno||''):'***';}
 
-function isMobile(){return window.innerWidth<=768;}
+function showDiag(){
+  var msg='=== 診斷資訊 ===\n';
+  msg+='刀房數：'+DATA.ors.length+'\n';
+  msg+='排程數：'+DATA.schedules.length+'\n';
+  msg+='使用者數：'+DATA.users.length+'\n';
+  msg+='選擇日期：'+document.getElementById('dash-date').value+'\n\n';
+  if(DATA.ors.length){
+    msg+='【刀房】\n';
+    DATA.ors.forEach(function(o){msg+='  id='+JSON.stringify(o.id)+' (type='+typeof o.id+') name='+o.name+' open='+o.open+'\n';});
+  }
+  if(DATA.schedules.length){
+    msg+='\n【排程前3筆】\n';
+    DATA.schedules.slice(0,3).forEach(function(s){msg+='  or='+JSON.stringify(s.or)+' (type='+typeof s.or+') date='+s.date+' op='+s.opname+'\n';});
+  }
+  msg+='\n【比對測試】\n';
+  if(DATA.ors.length&&DATA.schedules.length){
+    var o=DATA.ors[0];var s=DATA.schedules[0];
+    msg+='  or[0].id='+JSON.stringify(o.id)+' schedules[0].or='+JSON.stringify(s.or)+'\n';
+    msg+='  String比對：'+(String(o.id)===String(s.or))+'\n';
+    msg+='  Number比對：'+(Number(o.id)===Number(s.or))+'\n';
+  }
+  alert(msg);
+}
+
+
 
 function renderDashboard(){
   var dateVal=document.getElementById('dash-date').value;
