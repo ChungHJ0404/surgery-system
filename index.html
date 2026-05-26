@@ -847,7 +847,15 @@ function initApp(){
   // 登入後從 Sheets 載入最新資料
   if(SHEETS_URL){
     loading(true);
+    var _t=setTimeout(function(){
+      loading(false);
+      showToast('⚠️ 連線逾時，使用本地資料');
+      populateDrSelect();populateORSelect();
+      renderDashboard();renderList();renderStats();
+      if(isAdmin(CU))renderAdmin();
+    },10000);
     apiGet({action:'getAll'},function(data){
+      clearTimeout(_t);
       loading(false);
       if(data&&data.status==='ok'){
         if(data.users&&data.users.length){
@@ -859,7 +867,6 @@ function initApp(){
         if(data.ors&&data.ors.length){data.ors.forEach(function(o){o.id=Number(o.id);});DATA.ors=data.ors;}
         if(data.emergencyLogs)DATA.emergencyLogs=data.emergencyLogs;
         if(data.logs)DATA.logs=data.logs;
-        // 更新日期到最近有資料的日期
         var dates2=DATA.schedules.map(function(s){return fmtDate(s.date);}).filter(Boolean);
         var td2=today();var best2=td2;
         if(dates2.length){
@@ -868,12 +875,18 @@ function initApp(){
           if(f2.length)best2=f2[0];else if(p2.length)best2=p2[0];
         }
         document.getElementById('dash-date').value=best2;
-        populateDrSelect();populateORSelect();
-        renderDashboard();renderList();renderStats();
-        if(isAdmin(CU))renderAdmin();
         showToast('✓ 資料已同步');
+      }else{
+        showToast('⚠️ 無法連線 Sheets，使用本地資料');
       }
+      populateDrSelect();populateORSelect();
+      renderDashboard();renderList();renderStats();
+      if(isAdmin(CU))renderAdmin();
     });
+  }else{
+    populateDrSelect();populateORSelect();
+    renderDashboard();renderList();renderStats();
+    if(isAdmin(CU))renderAdmin();
   }
 }
 
